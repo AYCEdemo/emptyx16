@@ -1,0 +1,25 @@
+{
+  "name": "@ayce/emptyx16",
+  "version": "1.0.0",
+  "description": "Unofficial Commander X16 Hardware Reference",
+  "main": "index.js",
+  "scripts": {
+    "build": "generate-md --layout ./layout --input ./src --output ./dist",
+    "build-txt": "node txt-render.js ./src/emptyx16.md ./dist/emptyx16.txt",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AYCEdemo/emptyx16.git"
+  },
+  "author": "Natt Akuma",
+  "license": "CC-BY-4.0",
+  "bugs": {
+    "url": "https://github.com/AYCEdemo/emptyx16/issues"
+  },
+  "homepage": "https://github.com/AYCEdemo/emptyx16#readme",
+  "dependencies": {
+    "markdown-styles": "^3.2.0",
+    "marked": "^2.0.5"
+  }
+}

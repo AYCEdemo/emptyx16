@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>{{title}}</title>
+    <style>
+body {
+  font-size: 16px;
+  font-family: Arial, Helvetica, sans-serif;
+}
+.main-wrapper {
+  margin-left: 240px;
+}
+.main {
+  max-width: 48em;
+  margin: auto;
+}
+.toc {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 240px;
+}
+.toc .nav {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 10px;
+  overflow: auto;
+}
+.toc .nav .sidebar-header-1 {
+  list-style: none;
+}
+.toc .nav .sidebar-header-2 {
+  font-size: small;
+  margin-left: 1em;
+  list-style: disc;
+}
+.toc .nav .sidebar-header-3 {
+  font-size: small;
+  margin-left: 2em;
+  list-style: circle;
+}
+.toc .nav li a {
+  text-decoration: none;
+}
+p {
+  text-align: justify;
+}
+p, li {
+  line-height: 1.4;
+}
+pre {
+  font-size: 0.85em;
+  overflow: auto;
+  padding: 0 0.5em;
+}
+code {
+  font-size: 1em;
+}
+h1, h2, h3 {
+  position: relative;
+}
+h1:hover .header-link:before,
+h2:hover .header-link:before,
+h3:hover .header-link:before {
+    content: "\00B6";
+    font-size: smaller;
+}
+.header-link {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+
+  position: absolute;
+  top: 0;
+  left: -0.7em;
+  display: block;
+  padding-right: 1em;
+}
+h1:hover .header-link,
+h2:hover .header-link,
+h3:hover .header-link {
+  display: inline-block;
+  text-decoration: none;
+}
+@media print {
+  body {
+    font-size: 10.8px;
+    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+  }
+  .toc {
+    display: none;
+  }
+  a {
+    color: blue;
+  }
+  h1:not(:first-of-type) {
+    page-break-before: always;
+  }
+  pre {
+    page-break-inside: avoid;
+  }
+}
+    </style>
+  </head>
+<body>
+  <nav class="toc">
+    {{~> toc }}
+  </nav>
+  <div class="main-wrapper">
+    <div class="main">
+      {{~> content}}
+    </div>
+  </div>
+</body>
+</html>
