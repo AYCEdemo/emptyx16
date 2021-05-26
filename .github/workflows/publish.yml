@@ -1,0 +1,22 @@
+name: Build and publish on ayce.dev
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v2
+      with:
+        node-version: 16
+    - run: npm install
+    - run: npm run build
+    - run: npm run build-txt
+    - run: |
+        git remote set-url origin https://git:${GITHUB_TOKEN}@github.com/AYCEdemo/AYCEdemo.github.io.git
+        npx gh-pages -a -f -d dist -u "github-actions-bot <support+actions@github.com>"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
