@@ -16,6 +16,6 @@ jobs:
     - run: npm run build
     - run: npm run build-txt
     - run:
-        npx gh-pages -a -f -d dist -r https://github.com/AYCEdemo/AYCEdemo.github.io.git -u "github-actions-bot <support+actions@github.com>"
+        npx gh-pages -a -f -d dist -r "https://github.com/AYCEdemo/AYCEdemo.github.io.git" -u "github-actions-bot <support+actions@github.com>"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
