@@ -15,8 +15,7 @@ jobs:
     - run: npm install
     - run: npm run build
     - run: npm run build-txt
-    - run: |
-        git remote set-url origin https://git:${GITHUB_TOKEN}@github.com/AYCEdemo/AYCEdemo.github.io.git
-        npx gh-pages -a -f -d dist -u "github-actions-bot <support+actions@github.com>"
+    - run:
+        npx gh-pages -a -f -d dist -r https://github.com/AYCEdemo/AYCEdemo.github.io.git -u "github-actions-bot <support+actions@github.com>"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
