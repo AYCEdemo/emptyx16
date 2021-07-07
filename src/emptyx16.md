@@ -94,39 +94,49 @@ For below ports, x = Device number 0..1
 ```
 
 ### VERA Versatile Embedded Retro Adapter (R/W)
+Note: The rightmost column shows the initial value on Reset
 ```
-9F20h - ADDR_L       - VRAM Address (lower 8 bits)
-9F21h - ADDR_M       - VRAM Address (middle 8 bits)
-9F22h - ADDR_H       - VRAM Address (upper 1 bit) and Increment Mode
-9F23h - DATA0        - VRAM Data Port 0
-9F24h - DATA1        - VRAM Data Port 1
-9F25h - CTRL         - Control
-9F26h - IEN          - Interrupt Enable / Line Compare (upper 1 bit)
-9F27h - ISR          - Interrupt / Status Register
-9F28h - IRQLINE_L    - Interrupt Line Compare (lower 8 bits)
-9F29h - DC_VIDEO     - Active Display Control / H-Start      DC_HSTART
-9F2Ah - DC_HSCALE    - Active Display H-Scale / H-Stop       DC_HSTOP
-9F2Bh - DC_VSCALE    - Active Display V-Scale / V-Start      DC_VSTART
-9F2Ch - DC_BORDER    - Border Color / Active Display V-Stop  DC_VSTOP
-9F2Dh - L0_CONFIG    - L0 Mode and Map Size
-9F2Eh - L0_MAPBASE   - L0 Map Base
-9F2Fh - L0_TILEBASE  - L0 Tile Base and Tile Size
-9F30h - L0_HSCROLL_L - L0 Horizontal Scroll (lower 8 bits)
-9F31h - L0_HSCROLL_H - L0 Horizontal Scroll (upper 4 bits) / L0 Bitmap Color
-9F32h - L0_VSCROLL_L - L0 Vertical Scroll (lower 8 bits)
-9F33h - L0_VSCROLL_H - L0 Vertical Scroll (upper 4 bits)
-9F34h - L1_CONFIG    - L1 Mode and Map Size
-9F35h - L1_MAPBASE   - L1 Map Base
-9F36h - L1_TILEBASE  - L1 Tile Base and Tile Size
-9F37h - L1_HSCROLL_L - L1 Horizontal Scroll (lower 8 bits)
-9F38h - L1_HSCROLL_H - L1 Horizontal Scroll (upper 4 bits) / L1 Bitmap Color
-9F39h - L1_VSCROLL_L - L1 Vertical Scroll (lower 8 bits)
-9F3Ah - L1_VSCROLL_H - L1 Vertical Scroll (upper 4 bits)
-9F3Bh - AUDIO_CTRL   - Audio FIFO Control
-9F3Ch - AUDIO_RATE   - Audio FIFO Sample Rate
-9F3Dh - AUDIO_DATA   - Audio FIFO Data (W)
-9F3Eh - SPI_DATA     - SPI Data
-9F3Fh - SPI_CTRL     - SPI Control
+9F20h - ADDR_L       - VRAM Address (lower 8 bits)                    00h
+9F21h - ADDR_M       - VRAM Address (middle 8 bits)                   00h
+9F22h - ADDR_H       - VRAM Address (upper 1 bit) / Increment Mode    00h
+9F23h - DATA0        - VRAM Data Port 0                               00h
+9F24h - DATA1        - VRAM Data Port 1                               00h
+9F25h - CTRL         - Control                                        00h
+9F26h - IEN          - Interrupt Enable / Line Compare (upper 1 bit)  00h
+9F27h - ISR          - Interrupt / Status Register                    00h
+9F28h - IRQLINE_L    - Interrupt Line Compare (lower 8 bits)          00h
+
+        (DCSEL=0)
+9F29h - DC_VIDEO     - Active Display Control                         00h
+9F2Ah - DC_HSCALE    - Active Display H-Scale                         80h
+9F2Bh - DC_VSCALE    - Active Display V-Scale                         80h
+9F2Ch - DC_BORDER    - Border Color                                   00h
+
+        (DCSEL=1)
+9F29h - DC_HSTART    - Active Display H-Start                         00h
+9F2Ah - DC_HSTOP     - Active Display H-Stop                          A0h
+9F2Bh - DC_VSTART    - Active Display V-Start                         00h
+9F2Ch - DC_VSTOP     - Active Display V-Stop                          F0h
+
+9F2Dh - L0_CONFIG    - L0 Mode and Map Size                           00h
+9F2Eh - L0_MAPBASE   - L0 Map Base                                    00h
+9F2Fh - L0_TILEBASE  - L0 Tile Base and Tile Size                     00h
+9F30h - L0_HSCROLL_L - L0 H-Scroll (lower 8 bits)                     00h
+9F31h - L0_HSCROLL_H - L0 H-Scroll (upper 4 bits) / Bitmap Color      00h
+9F32h - L0_VSCROLL_L - L0 V-Scroll (lower 8 bits)                     00h
+9F33h - L0_VSCROLL_H - L0 V-Scroll (upper 4 bits)                     00h
+9F34h - L1_CONFIG    - L1 Mode and Map Size                           00h
+9F35h - L1_MAPBASE   - L1 Map Base                                    00h
+9F36h - L1_TILEBASE  - L1 Tile Base and Tile Size                     00h
+9F37h - L1_HSCROLL_L - L1 H-Scroll (lower 8 bits)                     00h
+9F38h - L1_HSCROLL_H - L1 H-Scroll (upper 4 bits) / Bitmap Color      00h
+9F39h - L1_VSCROLL_L - L1 V-Scroll (lower 8 bits)                     00h
+9F3Ah - L1_VSCROLL_H - L1 V-Scroll (upper 4 bits)                     00h
+9F3Bh - AUDIO_CTRL   - Audio FIFO Control                             00h
+9F3Ch - AUDIO_RATE   - Audio FIFO Sample Rate                         00h
+9F3Dh - AUDIO_DATA   - Audio FIFO Data (W)                            -
+9F3Eh - SPI_DATA     - SPI Data                                       -
+9F3Fh - SPI_CTRL     - SPI Control                                    00h (?)
 ```
 
 ### YM2151 I/O Ports
@@ -378,9 +388,8 @@ the integer part of this virtual screen position is then used for the rest of
 the composition logic. This puts the scaling center at the top-left corner of
 an active display area.
 
-NOTE: Setting H-Scale above 1.0 (80h) has a glitchy result when the line draws
-beyond 640th pixel in the official emulator. It's not known if the real
-hardware also has this behavior. (?)
+NOTE: Setting H-Scale or V-Scale above 1.0 (80h) will skip some pixels while
+rendering, potentially causing inaccurate collision detection (?)
 
 ### 9F2Ch (DCSEL=0) - DC_BORDER - Border Color (R/W)
 When the drawing pixel is outside the active display area defined by start and
@@ -402,8 +411,8 @@ in steps of 4 and vertical value is in steps of 2. The stopping point is not
 inclusive.
 
 These four register values are analogous to a display window in many consoles.
-The width of an active display is (DC_HSTOP-DC_HSTART)\*4 pixels and the height
-of an active display is (DC_VSTOP-DC_VSTART)\*2 pixels. For example, a screen
+The width of an active display is `(DC_HSTOP-DC_HSTART)*4` pixels and the height
+of an active display is `(DC_VSTOP-DC_VSTART)*2` pixels. For example, a screen
 that starts at (64,50) with an active display size of 320x200 pixels will
 have 9F29h-9F2Ch values of 10h, 19h, 60h, 7Dh in order.
 
@@ -527,7 +536,7 @@ from the official emulator source code and are not confirmed on real hardware
 (?)
 
 ### 9F3Ch - AUDIO_RATE - Audio FIFO Sample Rate (R/W)
-Specifies the playback rate of the FIFO in `25000*n/512` KHz.
+Specifies the playback rate of the FIFO in `25000*n/65536` KHz.
 A value of 0 or anything greater than 128 will stop playback.
 
 ### 9F3Dh - AUDIO_DATA - Audio FIFO Data (W)
@@ -557,25 +566,30 @@ only interface with automatic clocking and transfer in X16.
 
 ### 9F3Eh - SPI_DATA - SPI Data (R/W)
 Reads from this register returns the last received byte. Writes to this
-register will start transferring one byte of the written data to the device and
-receiving the data from the device at the same time. The busy flag in SPI_CTRL
-is set during the transfer period. Once the transfer completes, the busy flag
-is cleared and the new received byte is latched to this register. Since the
-VERA is on the controller side and due to how SPI works, it's usually required
-to write to this register many times to shift out dummy clocks until the
-desired data from the device is received and latched.
+register will start transferring one byte of written data to the device and
+receiving one byte of data from the device at the same time. The busy flag in
+SPI_CTRL is set during the transfer period. Once the transfer completes, the
+busy flag is cleared and the new received byte is latched to this register.
+Since the VERA is on the controller side and due to how SPI works, it's usually
+required to write to this register many times to shift out dummy clocks until
+the desired data from the device is received and latched.
 
 ### 9F3Fh - SPI_CTRL - SPI Control (R/W)
 ```
 Bit
 7       Busy Flag (1=Busy) (Read-only)
-6-2     Not Used
+6-4     Not Used
+3       Auto Transfer (0=Off, 1=On) (undocumented)
+2       Not Used
 1       Shift Clock Speed (0=12.5MHz, 1=391KHz)
 0       Chip Select (0=Release, 1=Select)
 ```
 A shift clock speed of 391KHz was implemented because some memory cards require
 it to be lower than 400KHz during an initialization process. A chip select is
 required in order to activate the memory card.
+
+When Auto Transfer is on, any reads from SPI_DATA will also transfer FFh to the
+device and receive one byte of data from it at the same time.
 
 ### Memory Card Commands
 The memory card takes a 6-byte command and arguments as shown below:
@@ -897,6 +911,31 @@ NOTE: Due to a hardware quirk, a palette number entry will also modify the
 first 16 colors mapping in 8bpp mode as if it was 4bpp mode. So it is
 recommended to set the palette number to 0 to still have access to all 256
 colors.
+
+### Initial Palette
+On reset (by either on hardware or a write to CTRL), the internal palette
+memory is initialized to these values. It consists of 16 pre-defined colors,
+16 gray ramp colors and 224 8x4x7 HSL ramp colors:
+```
+    x0h x1h x2h x3h x4h x5h x6h x7h x8h x9h xAh xBh xCh xDh xEh xFh
+0xh 000 FFF 800 AFE C4C 0C5 00A EE7 D85 640 F77 333 777 AF6 08F BBB
+1xh 000 111 222 333 444 555 666 777 888 999 AAA BBB CCC DDD EEE FFF
+2xh 211 433 644 866 A88 C99 FBB 211 422 633 844 A55 C66 F77 200 411
+3xh 611 822 A22 C33 F33 200 400 600 800 A00 C00 F00 221 443 664 886
+4xh AA8 CC9 FEB 211 432 653 874 A95 CB6 FD7 210 431 651 862 A82 CA3
+5xh FC3 210 430 640 860 A80 C90 FB0 121 343 564 786 9A8 BC9 DFB 121
+6xh 342 463 684 8A5 9C6 BF7 120 241 461 582 6A2 8C3 9F3 120 240 360
+7xh 480 5A0 6C0 7F0 121 343 465 686 8A8 9CA BFC 121 242 364 485 5A6
+8xh 6C8 7F9 020 141 162 283 2A4 3C5 3F6 020 041 061 082 0A2 0C3 0F3
+9xh 122 344 466 688 8AA 9CC BFF 122 244 366 488 5AA 6CC 7FF 022 144
+Axh 166 288 2AA 3CC 3FF 022 044 066 088 0AA 0CC 0FF 112 334 456 668
+Bxh 88A 9AC BCF 112 224 346 458 56A 68C 79F 002 114 126 238 24A 35C
+Cxh 36F 002 014 016 028 02A 03C 03F 112 334 546 768 98A B9C DBF 112
+Dxh 324 436 648 85A 96C B7F 102 214 416 528 62A 83C 93F 102 204 306
+Exh 408 50A 60C 70F 212 434 646 868 A8A C9C FBE 211 423 635 847 A59
+Fxh C6B F7D 201 413 615 826 A28 C3A F3C 201 403 604 806 A08 C09 F0B
+```
+![Initial palette colors arranged in a 16x16 grid as an above table](data:image/png;base64,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)
 
 ### Screen Border Color
 [X16 VERA Display Composer](#x16-vera-display-composer)  
@@ -2334,7 +2373,7 @@ KC, KF-------+---------->|  DT1  |                       v
        | Envelope  |                         |    _______v______
 Keyon->| Generator |->(+)->(+)---------------+   |  Att. dB To  |
        |___________|   ^    ^                |   | Linear Table |
-AR, D1R,     ^         |    | AMS En.        |   |______________|   
+AR, D1R,     ^         |    | AMS En.        |   |______________|
 D1L, D2R,----'         |    '----:----[AMS]  |           |
 RR, KS                 TL                    |           o
 .............................................|............\
@@ -2843,17 +2882,17 @@ LFSR generator state.
 ```
 Waveform    Phase Modulation        Amplitude Modulation
 
-Sawtooth    +  .|    .|    .|       0 `.   |`.   |`.   |
-(W=0)       0 ' |  .' |  .' |  .        `. |  `. |  `. |
-            -   |.'   |.'   |.'     +     `|    `|    `|
-              __       _____          __       _____    
+Sawtooth    +  .|    .|    .|       0     .|    .|    .|
+(W=0)       0 ' |  .' |  .' |  .        .' |  .' |  .' |
+            -   |.'   |.'   |.'     + .'   |.'   |.'   |
+              __       _____             _____       ___
 Square      +   |     |     |       0   |     |     |   
 (W=1)       0   |     |     |           |     |     |   
-            -   |_____|     |___    +   |_____|     |___
+            -   |_____|     |___    + __|     |_____|   
 
-Triangle    +  /\    /\    /\       0 \    /\    /\    /
-(W=2)       0 /  \  /  \  /  \         \  /  \  /  \  /
-            -     \/    \/    \/    +   \/    \/    \/
+Triangle    +  /\    /\    /\       0   /\    /\    /\  
+(W=2)       0 /  \  /  \  /  \         /  \  /  \  /  \ 
+            -     \/    \/    \/    + /    \/    \/    \
 
 Noise       + \ ! / ! \ ! / ! \     0 \ ! / ! \ ! / ! \
 (W=3)       0 - + - + - + - + -       - + - + - + - + -
