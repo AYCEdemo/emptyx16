@@ -1994,7 +1994,7 @@ Timer 1 is a 16-bit counter which counts down at a rate of PHI2. When the
 counter reaches 0, IFR bit 6 is set and generate an interrupt if it's enabled.
 After this, it will either not generate any more interrupts or reload the
 counter with a latched value depending on the modes described below. Timer 1
-can also be configured to output on PB7 pin with ACR bit 7 setting.
+can also be configured to toggle output on PB7 pin with ACR bit 7 setting.
 
 ### 4h/5h - T1L/T1H - T1 Counter (R/W)
 Reads will return the current counter value and clear IFR bit 6 if the lower 8
@@ -2406,9 +2406,9 @@ CON = 2
 ```
       .-----------.
       v    .----. |
-PG-->(+)-->| M1 |-+---.  PG         PG
-           '----'     | /            |
-           .----.     vL   .----.    v    .----.
+PG-->(+)-->| M1 |-+------------------.  PG
+           '----'    PG              | /
+           .----.     v    .----.    vL   .----.
 PG-------->| C1 |----(+)-->| M2 |-->(+)-->| C2 |-->OUT
            '----'          '----'         '----'
 ```
