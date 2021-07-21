@@ -806,7 +806,7 @@ Bit
 
 ### Tile Data (Layers and OBJ)
 VERA strictly uses packed pixel format in every color depth setting. Its
-smallest 8x1 "lines" unit can be described as follows:
+smallest 8x1 "bars" unit can be described as follows:
 ```
    Byte 0        1        2        3        4        5        6        7
     Bit 76543210 76543210 76543210 76543210 76543210 76543210 76543210 76543210
@@ -816,21 +816,21 @@ smallest 8x1 "lines" unit can be described as follows:
 8bpp    aaaaaaaa bbbbbbbb cccccccc dddddddd eeeeeeee ffffffff gggggggg hhhhhhhh
 Depth
 ```
-For each line, the color ID for each pixel A to H from left to right are packed
+For each bar, the color ID for each pixel A to H from left to right are packed
 together from left to right. The bit length of each color ID depends on the
-color depth setting. Making each line occupy 1, 2, 4 or 8 bytes total. A color
+color depth setting. Making each bar occupy 1, 2, 4 or 8 bytes total. A color
 ID of 0 always mean transparent except in a certain 1bpp tile mode.
 
 To make up tiles which can be up to 16x16 pixels in size for Layers, and up to
-64x64 for OBJs, each lines are combined as follows. With X being a tile width
-in pixels divided by 8 and Y being a tile height in pixels. For example, a tile
+64x64 for OBJs, each bars are combined as follows. With X being a tile width in
+pixels divided by 8 and Y being a tile height in pixels. For example, a tile
 size of 32x16 pixels has X=4 and Y=16.
 ```
-Vertical Rows        Left-most    ...     Right-most
-Upper Row   in lines    0,      1,      2, ...,  X-1
-2nd Row     in lines    X,    X+1,    X+2, ..., 2X-1
+Vertical Rows       Left-most    ...     Right-most
+Upper Row   in bars    0,      1,      2, ...,  X-1
+2nd Row     in bars    X,    X+1,    X+2, ..., 2X-1
 ...
-Yth Row     in lines XY-X, XY-X+1, XY-X+2, ..., XY-1
+Yth Row     in bars XY-X, XY-X+1, XY-X+2, ..., XY-1
 ```
 
 ### Bitmap Data
