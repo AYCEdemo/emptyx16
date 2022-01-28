@@ -1876,14 +1876,14 @@ DDRx        Disabled    Only output register is     Pxn pin's level is read to
 bit n = 0               set. Pxn pin remain Hi-Z    bit n
 (Input)     -------------------------------------------------------------------
             Enabled     Only output register is     Input register bit n which
-                        set. Pxn pin remain Hi-Z    is latched at last CA1
+                        set. Pxn pin remain Hi-Z    is latched at last Cx1
                                                     transition is read
 -------------------------------------------------------------------------------
 DDRx        Disabled    Pxn pin's output level is   Pxn pin's level is read to
 bit n = 1               set to bit n's value        bit n
 (Output)    -------------------------------------------------------------------
             Enabled     Pxn pin's output level is   Input register bit n which
-                        set to bit n's value        is latched at last CA1
+                        set to bit n's value        is latched at last Cx1
                                                     transition is read
 ```
 Latching is controlled by ACR bit 0-1's value (for Port A and B respectively).
@@ -2008,9 +2008,9 @@ clear IFR bit 6. When restarting the counter with a new reload value, it's
 recommended to write to 4h first then write to 5h.
 
 ### 6h/7h - T1LL/T1LH - T1 Latch (R/W)
-Reads will return the current counter value but doesn't clear IFR bit 6. Writes
-will set the latch (reload) value. If the upper 8 bits are written, clear IFR
-bit 6 only (no counter reload like in T1H).
+Reads will return the latch (reload) value but doesn't clear IFR bit 6. Writes
+will set the latch value. If the upper 8 bits are written, clear IFR bit 6 only
+(no counter reload like in T1H).
 
 ### Timer 1 One-shot Mode (ACR bit 6 = 0)
 ```
@@ -2039,7 +2039,7 @@ T1H Write   ___|   |_______/ /_____________/ /_____________
 IRQB               :                 |_____/ /         |___
 (IER.6=1)   _______:                 :_____/ /_________:
 PB7 Out            |_______/ /_______|                 |___
-(ACR.7=1)          <--N+1.5 cycles--><--N+1.5 cycles-->
+(ACR.7=1)          <--N+1.5 cycles--><--N+2.5 cycles-->
 ```
 
 ## VIA Timer 2
@@ -2238,7 +2238,7 @@ check if this chip is the one generating an interrupt. It can only be cleared
 when all enabled and active interrupt flags are cleared. The other flags can
 only be cleared by:
 ```
-Timer 1 Timeout:    Read T1L or write T1LH
+Timer 1 Timeout:    Read T1L or write T1H or write T1LH
 Timer 2 Timeout:    Read T2L or write T2H
 Cx1 Transition:     Read or write PRx
 Cx2 Transition:     Read or write PRx (Dependent) / Write to IFR (Independent)
@@ -2259,7 +2259,7 @@ Bit
 ```
 Enable/Disable is only applied to selected bits of that write data. For
 example, writing E0h will enable Timer 1 and 2 interrupts and leave the
-rest unchanged.
+rest unchanged. On read, Enable/Disable bit will always be 1.
 
 # YM2151 FM Operator Type-M (OPM)
 
