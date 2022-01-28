@@ -1487,7 +1487,7 @@ SCL      |_| |_| |_| |_| |_| |_| |_| |_| |_| |_| |_| |/ /|_| |_| |_| |_|
 SDA   |___|___|___|___|___|___|___|___|___|___|___|___/ /_|___|___|_______|
      START  7   6   5   4   3   2   1   0  ACK  7   6 ...   1   0  ACK  STOP
 ```
-Data transfer starts with pulling the clock line low to signal the start
+Data transfer starts with pulling the data line low to signal the start
 condition to every devices in the bus. Then begin writing a data every
 falling edge of the clock (the device will read it at the rising edge). After
 each byte transferred, the device will send acknowledge bit back. Read this at
@@ -1825,21 +1825,25 @@ Scanline Length     800 dot cycles
                     = 512 CPU cycles (interlaced)
 ```
 
-### Vertical Timings
+### Detailed Timings
+(H=Horizontal, V=Vertical, F=Field)
+
 Progressive Output
 ```
-V=0         End of VBlank, toggle field (?), begin of drawing
-V=480       Begin of VBlank (VBlank IRQ, collision latch)
-V=524       Last Line
-V=IRQLINE   Generate Line IRQ
+H=0 V=0             End of VBlank
+H=0..639  V=0..479  Draw Picture
+H=0 V=480           Begin of VBlank (VBlank IRQ, collision latch)
+    V=524           Last Line
+H=0 V=IRQLINE       Generate Line IRQ
 ```
 Interlaced Output
 ```
-V=0         End of VBlank, toggle field (?), begin of drawing
-V=240       Begin of VBlank (VBlank IRQ, collision latch)
-V=261       Last Line
-V=262       Extra Line (only occur in even fields)
-V=IRQLINE/2 Generate Line IRQ
+H=0 V=0             End of VBlank, toggle field (?)
+H=0..639  V=0..239  Draw Picture
+H=0 V=240           Begin of VBlank (VBlank IRQ, collision latch)
+    V=261           Last Line
+    V=262 F=1       Extra Line
+H=0 V=IRQLINE/2     Generate Line IRQ
 ```
 
 # VIA Versatile Interface Adapter
@@ -2885,10 +2889,10 @@ Waveform    Phase Modulation        Amplitude Modulation
 Sawtooth    +  .|    .|    .|       0     .|    .|    .|
 (W=0)       0 ' |  .' |  .' |  .        .' |  .' |  .' |
             -   |.'   |.'   |.'     + .'   |.'   |.'   |
-              __       _____             _____       ___
-Square      +   |     |     |       0   |     |     |   
-(W=1)       0   |     |     |           |     |     |   
-            -   |_____|     |___    + __|     |_____|   
+              __    __    __             __    __    __
+Square      +   |  |  |  |  |  |    0   |  |  |  |  |  |
+(W=1)       0   |  |  |  |  |  |        |  |  |  |  |  |
+            -   |__|  |__|  |__|    + __|  |__|  |__|  |
 
 Triangle    +  /\    /\    /\       0   /\    /\    /\  
 (W=2)       0 /  \  /  \  /  \         /  \  /  \  /  \ 
@@ -3253,10 +3257,10 @@ Base+0C nn nn       4   nnnn        op=[nnnn]
 ### Bit Test
 ```
 Opcode      Flags Clks  Syntax
-24 nn       xx--z-  3   BIT nn
-2C nn nn    xx--z-  4   BIT nnnn
-34 nn       xx--z-  4   BIT nn,X
-3C nn nn    xx--z-  4*  BIT nnnn,X
+24 nn       nv--z-  3   BIT nn
+2C nn nn    nv--z-  4   BIT nnnn
+34 nn       nv--z-  4   BIT nn,X
+3C nn nn    nv--z-  4*  BIT nnnn,X
 89 nn       ----z-  2   BIT #nn
 ```
 <small>* Add one cycle if indexing crosses a page boundary</small>
