@@ -1,6 +1,6 @@
 # Emptyx16 - X16 Hardware Specs
 
-nocash-style Commander X16 hardware specifications
+Commander X16 hardware specifications
 
 ### X16 Hardware Specifications
 [X16 Overview](#x16-overview)  
@@ -40,10 +40,10 @@ Display     640x480 pixels with 4096 colors
 BG layers   2 background layers
 BG types    Tile/map-based or bitmap-based
 BG colors   256 colors, or 2/4/16 colors/16 palettes
-OBJ colors  256 colors, or 16 colors/16 palettes
-OBJ size    16 types (in range of 8x8 up to 64x64)
-OBJs/Screen max. 128 OBJs of any size (up to 64x64 each)
-OBJs/Line   max. 80 OBJs of 8x8 size (under best circumstances)
+Spr colors  256 colors, or 16 colors/16 palettes
+Spr size    16 types (in range of 8x8 up to 64x64)
+Sprs/Screen max. 128 sprites of any size (up to 64x64 each)
+Sprs/Line   max. 80 sprites of 8x8 size (under best circumstances)
 ```
 
 ### Sound
@@ -325,7 +325,7 @@ the register address won't set and isn't affected by this busy flag, however.
 [X16 VERA Memory and I/O Map (VRAM)](#x16-vera-memory-and-io-map-vram)  
 [X16 VERA Programmable Sound Generator (PSG)](#x16-vera-programmable-sound-generator-psg)  
 [X16 VERA Color Palette](#x16-vera-color-palette)  
-[X16 VERA Sprites (OBJs)](#x16-vera-sprites-objs)  
+[X16 VERA Sprites](#x16-vera-sprites)  
 VERA memory isn't mapped to the CPU bus, and can be accessed only via I/O
 ports.  
 [X16 VERA Memory Access](#x16-vera-memory-access)
@@ -494,7 +494,7 @@ its flags remain set until the buffer is larger than or equal to 1024 bytes.
 Sprite Collide IRQ is generated at VBlank when a sprite collision occurs. Its
 flags and Sprite Collisions field remain set until the next VBlank. For details
 about sprite collision bits, see:  
-[X16 VERA Sprites (OBJs)](#x16-vera-sprites-objs)
+[X16 VERA Sprites](#x16-vera-sprites)
 
 Line IRQ is generated at the beginning of the display line that matches the
 line compare value. Its flags are not automatically cleared.
@@ -768,7 +768,7 @@ Offset          Content
 00000h-1F9BFh   Video RAM
 1F9C0h-1F9FFh   PSG Registers
 1FA00h-1FBFFh   Color Palette
-1FC00h-1FFFFh   Object Attributes
+1FC00h-1FFFFh   Sprite Attributes
 ```
 All of VERA I/O registers at 1F9C0h-1FFFFh are write-only and external to the
 VRAM. Any writes will set both it and the VRAM at that location but reads will
@@ -804,7 +804,7 @@ Bit
 7-0     Character Number (00h-FFh)
 ```
 
-### Tile Data (Layers and OBJ)
+### Tile Data (Layers and Sprites)
 VERA strictly uses packed pixel format in every color depth setting. Its
 smallest 8x1 "bars" unit can be described as follows:
 ```
@@ -822,8 +822,8 @@ color depth setting. Making each bar occupy 1, 2, 4 or 8 bytes total. A color
 ID of 0 always mean transparent except in a certain 1bpp tile mode.
 
 To make up tiles which can be up to 16x16 pixels in size for Layers, and up to
-64x64 for OBJs, each bars are combined as follows. With X being a tile width in
-pixels divided by 8 and Y being a tile height in pixels. For example, a tile
+64x64 for sprites, each bars are combined as follows. With X being a tile width
+in pixels divided by 8 and Y being a tile height in pixels. For example, a tile
 size of 32x16 pixels has X=4 and Y=16.
 ```
 Vertical Rows       Left-most    ...     Right-most
@@ -903,7 +903,7 @@ Bit
 
 ### Color Palette Indices
 ```
-00h      Backdrop Color (used when all Layer/OBJ pixels are transparent)
+00h      Backdrop Color (used when all Layer/Sprite pixels are transparent)
 01h-FFh  256-color Palette (1bpp mode and 8bpp mode)
 01h-FFh  Sixteen 16-color Palettes (2bpp mode uses first four colors each)
 ```
@@ -940,12 +940,12 @@ Fxh C6B F7D 201 413 615 826 A28 C3A F3C 201 403 604 806 A08 C09 F0B
 ### Screen Border Color
 [X16 VERA Display Composer](#x16-vera-display-composer)  
 
-## X16 VERA Sprites (OBJs)
+## X16 VERA Sprites
 
-### OAM (Object Attribute Memory)
-VERA contains the data for 128 OBJs mapped to the location of 1FC00h in VRAM.
-OAM size is 1024 bytes which extends to the end of VRAM at 1FFFFh.
-It contains an 8-byte entry for each of 128 OBJs:
+### Sprite Attributes
+VERA contains the data for 128 sprites mapped to the location of 1FC00h in
+VRAM. The total size is 1024 bytes which extends to the end of VRAM at 1FFFFh.
+It contains an 8-byte entry for each of 128 sprites:
 ```
 Byte 0-1
   Bit 15    Color Depth (0=4bpp, 1=8bpp)
@@ -956,10 +956,10 @@ Byte 4-5    Y-Coordinate (upper 6 bits are ignored) (-512..511)
 Byte 6
   Bit 7-4   Collision Mask
   Bit 3-2   Enable / Priority Relative to Layers
-              0 = OBJ disabled
-              1 = OBJ between backdrop and layer 0
-              2 = OBJ between layer 0 and layer 1
-              3 = OBJ in front of layer 1
+              0 = Sprite disabled
+              1 = Sprite between backdrop and layer 0
+              2 = Sprite between layer 0 and layer 1
+              3 = Sprite in front of layer 1
   Bit 1     V-flip (0=Normal, 1=Mirror vertically)
   Bit 0     H-flip (0=Normal, 1=Mirror horizontally)
 Byte 7
@@ -974,24 +974,24 @@ emulator source code and has not been confirmed on real hardware (?)
 
 VERA has a feature where sprite collisions can be detected automatically on
 hardware while rendering. It does this by having a collision buffer in addition
-to a render buffer in a line. Each time a non-transparent pixel of an OBJ is
+to a render buffer in a line. Each time a non-transparent pixel of a sprite is
 being drawn to the buffer, it will compare the collision mask bit field between
-of that OBJ and the buffer. A collision is marked if one of bit positions
+of that sprite and the buffer. A collision is marked if one of bit positions
 match. The implementation pseudocode is as follows:
 ```
 For each frame:
     cflag := 0
     Set all Collision buffer to 0
-    For each OBJ:
+    For each sprite:
         If a non-transparent pixel is being drawn:
-            cflag |= Collision buffer at target pixel & OBJ's collision mask
-            Collision buffer at target pixel |= OBJ's collision mask
+            cflag |= Collision buffer at target pixel & sprite's collision mask
+            Collision buffer at target pixel |= sprite's collision mask
     ISR[7:4] = cflag
     If cflag != 0 and Sprite Collide IRQ is enabled:
         Generate Sprite Collide IRQ
 ```
 Note that the effect of sprites per line limit still applies here and enabled
-OBJs that are on the line but are never displayed (off-screen) still adds to
+sprites that are on the line but are never displayed (off-screen) still adds to
 this logic. Bits 4-7 of ISR and the Sprite Collide IRQ is only updated and
 generated once per frame at the beginning of the VBlank.
 
@@ -999,27 +999,28 @@ CAUTION: Collisions are only detected on lines that are actually rendered.
 This can be problematic in interlaced mode where some lines are skipped per
 frame and potentially missing the collision.
 
-### OBJ Priority to Other OBJs
-The OAM location dictates the order in which OBJs to be displayed on top. An
-OBJ will always display on top of the other OBJs that have their OAM entries
-following its. Thus making OBJ0 has the highest priority and OBJ127 has the
-lowest priority.
+### Sprite Priority to Other Sprites
+The sprite attribute memory location dictates the order in which sprites to be
+displayed on top. A sprite will always display on top of the other sprites that
+have their attribute entries following its. Thus making sprite #0 has the
+highest priority and sprite #127 has the lowest priority.
 
 ### Maximum Number of Sprites per Line
-The total available OBJ rendering cycles per line are 801. The required
-rendering cycles per OBJ are as follows:
+The total available sprite rendering cycles per line are 801. The required
+rendering cycles per sprite are as follows:
 ```
-Depth       OBJ Width
+Depth       Sprite Width
             8px   16px  32px  64px
 4bpp        10    19    37    73    ; 9X+1
 8bpp        11    21    41    81    ; 10X+1
 <disabled/
-not on line>          1             ; OAM lookup cost
+not on line>          1             ; Sprite lookup cost
 ```
-Under best circumstances, up to 80 OBJs (with all of them being 4bpp 8x8) can
-be displayed per screen line. The maximum number of OBJs per line is also
-affected by off-screen OBJs. To avoid this, either move displayed OBJs to the
-beginning of the OAM or set a priority of 0 (disabled) to undisplayed OBJs.
+Under best circumstances, up to 80 sprites (with all of them being 4bpp 8x8)
+can be displayed per screen line. The maximum number of sprites per line is
+also affected by off-screen sprites. To avoid this, either move displayed
+sprites to the beginning of the attribute memory or set a priority of 0
+(disabled) to undisplayed sprites.
 
 
 # X16 Peripherals
