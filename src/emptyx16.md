@@ -3092,6 +3092,7 @@ n   Internal cycle, when branch is taken
 x   Internal cycle, when branching crosses page boundaries
 y   Internal cycle, when indexing across page boundaries or STA nnnn,X
     The CPU doesn't do a read at invalid address unlike older NMOS 6502s
+    (it will read the last byte again instead)
 ```
 
 ### Implied or Immediate Operands
@@ -3130,7 +3131,7 @@ PLx                         4       CNNS
 Addressing Mode             Cycles  Execution
 BRA rr                      3,4     CPNx
 Bxx rr                      2,3,4   CPnx
-BBxn nn,rr                  5       CPPDN (?)
+BBxn nn,rr                  5,6,7   CPDNPnx
 JMP nnnn                    3       CPP
 JSR nnnn                    6       CPPNSS
 JMP (nnnn)                  6       CPPNDD
@@ -3455,8 +3456,12 @@ The branch opcode with parameter takes up two bytes (or three bytes in case of
 BBSx and BBRx), causing the PC to get incremented past it without any extra
 boundary cycle. If a branch is taken, the signed parameter is then added to the
 PC (PC+rr). The extra clock cycle occurs if the addition crosses page
-boundaries. BBSx and BBRx instructions don't have any extra cycle penalties at
-all (?).
+boundaries.
+
+### Dummy Read Cycles in Read-Modify Opcodes
+The 65C02 does a read twice in all Read-Modify opcodes (such as INC, DEC and
+Shift/Rotate). Unlike older NMOS 6502s which does a read then a write of
+unmodified data, causing I/Os to act twice on writes.
 
 
 # About/Credits
@@ -3475,9 +3480,6 @@ This document is released under
 welcome to contribute, add missing bits and provide feedbacks through the
 website repository linked below.
 
-> Needed: Someone with a real hardware prototype, preferably active on Discord
-> too...
-
 ### Authors
 Natt Akuma
 
@@ -3485,9 +3487,9 @@ Natt Akuma
  - Michael Steil (official X16 programmer's reference)
  - Frank van den Hoef (official VERA programmer's reference)
  - Martin Korth (nocash) (SNES/65xx CPU reference)
- - Official X16 emulator contributors
  - Aaron Giles, Nuke.YKT (YM2151 core and test register details)
  - Adam Chapweske (PS/2 interface articles)
+ - Wavicle (Test benches)
 
 ### Homepage
 https://ayce.dev/emptyx16.html - X16 specs updates (html version)  
