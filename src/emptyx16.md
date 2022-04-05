@@ -10,6 +10,7 @@ Commander X16 hardware specifications
 [X16 Peripherals](#x16-peripherals)  
 [X16 I2C Bus](#x16-i2c-bus)  
 [X16 Timings](#x16-timings)  
+[X16 Pinouts](#x16-pinouts)  
 [VIA Versatile Interface Adapter](#via-versatile-interface-adapter)  
 [YM2151 FM Operator Type-M (OPM)](#ym2151-fm-operator-type-m-opm)  
 [CPU 65C02 Microprocessor](#cpu-65c02-microprocessor)  
@@ -329,6 +330,11 @@ the register address won't set and isn't affected by this busy flag, however.
 VERA memory isn't mapped to the CPU bus, and can be accessed only via I/O
 ports.  
 [X16 VERA Memory Access](#x16-vera-memory-access)
+
+### Pinouts
+[X16 Audio/Video Connector Pinouts](#x16-audiovideo-connector-pinouts)  
+[X16 Pinouts VERA Module](#x16-pinouts-vera-module)  
+[X16 Pinouts VERA Chips](#x16-pinouts-vera-chips)  
 
 ## X16 VERA Control
 
@@ -1880,6 +1886,244 @@ H=0        V=240        Begin of VBlank, set VBlank flag and collision latch
 H=135      V=IRQLINE/2  Generate line IRQ
 H=135..774 V=0..239     Draw picture
 H=793                   Last dot in the line
+```
+
+
+# X16 Pinouts
+
+### External Connectors
+[X16 Power Supply](#x16-power-supply)  
+[X16 PS/2 Connector Pinouts](#x16-ps2-connector-pinouts)  
+[X16 IEC Connector Pinouts](#x16-iec-connector-pinouts)  
+[X16 Joypad Connector Pinouts](#x16-joypad-connector-pinouts)  
+[X16 Audio/Video Connector Pinouts](#x16-audiovideo-connector-pinouts)  
+[X16 Memory Card Pinouts](#x16-memory-card-pinouts) 
+[X16 Expansion Port Pinouts](#x16-expansion-port-pinouts)  
+
+### Internal Connectors
+[X16 Pinouts VERA Module](#x16-pinouts-vera-module)  
+
+### Chips
+[X16 Pinouts SMC Chip](#x16-pinouts-smc-chip)  
+[X16 Pinouts VERA Chips](#x16-pinouts-vera-chips)  
+
+## X16 Power Supply
+
+### X16p: ATX (20-pin socket)
+```
+         _____
+  +3.3V |1  13| +3.3V
+  +3.3V |2  14| -12V
+    GND |3  15| GND
+    +5V |4  16| /PWR_ON
+    GND |5  17||GND
+    +5V |6  18||GND
+    GND |7  19| GND
+ PWR_OK |8  20| NC
+ +5V_SB |9  21| +5V
+   +12V |10 22| +5V
+        '-----'
+```
+
+## X16 PS/2 Connector Pinouts
+```
+    Keyboard Port   Mouse Port
+1   Keyboard Data   Mouse Data              _ _
+2   Not Connected   Not Connected         .' - '.
+3   Ground          Ground           NC  / 6 . 5 \  CLK
+4   VCC +5V         VCC +5V         VCC | 4  '  3 | GND
+5   Keyboard Clock  Mouse Clock      NC  \  2 1  /  DAT
+6   Not Connected   Not Connected         '.___.'
+```
+
+## X16 IEC Connector Pinouts
+```
+1   Service Request                         _ _
+2   Ground                                .' - '.
+3   Attention                      DATA  / 5   1 \  SRQ
+4   Clock                               |    6    | RESET
+5   Data                            CLK  \ 4   2 /  GND
+6   Reset                                 '._3_.'   ATN
+```
+
+## X16 Joypad Connector Pinouts
+```
+    Port 1          Port 2           ______________________________
+1   VCC +5V         VCC +5V         |  1   2   3   4  |  5   6   7 \
+2   JOY-1/3 Clock   JOY-2/4 Clock   | VCC CK1 STB IN1 | IN3 IO6 GND | 1
+3   JOY Strobe      JOY Strobe      |_________________|____________/
+4   JOY-1 Data      JOY-2 Data       ______________________________
+5   JOY-3 Data      JOY-4 Data      |  1   2   3   4  |  5   6   7 \
+6   I/O bit 6 (NC)  I/O bit 7 (NC)  | VCC CK2 STB IN2 | IN4 IO7 GND | 2
+7   Ground          Ground          |_________________|____________/
+```
+
+## X16 Audio/Video Connector Pinouts
+
+### RGB Out (VGA Connector)
+```
+1   Red     6   R Rtn.  11  ID0/RES      ______________________
+2   Green   7   G Rtn.  12  ID1/SDA     /  5   4   3   2   1   \
+3   Blue    8   B Rtn.  13  HSync       |    10  9   8   7   6 |
+4   ID2/RES 9   Key/+5V 14  VSync        | 15  14  13  12  11 |
+5   Ground  10  Ground  15  ID3/SCL       --------------------
+```
+NOTE: In interlaced RGB mode, only composite sync signal is output in pin 13;
+pin 14 will always output ground.
+
+### Composite Out (Yellow RCA Connector)
+```
+Tip     Video            .--.
+Ring    Ground          | ()-|--COMP
+                        '.__.'--GND
+```
+
+### Luma/Chroma Out (S-Video Connector)
+```
+                            _ _
+1   Ground                .' - '.
+2   Ground            C  / 4   3 \  Y
+3   Luminance       GND | 2     1 | GND
+4   Chrominance          \  [_]  /
+                          '.___.'
+```
+
+### Audio Out (3.5mm Phone Connector)
+```
+Tip     Audio Left       ___ ___ _____.-----------.
+Ring    Audio Right     (___|___|_____|           |
+Sleeve  Ground            L   R   GND '-----------'
+```
+
+## X16 Memory Card Pinouts
+```
+    SPI Mode    Native Mode                        ________________
+                1-bit Bus   4-bit Bus             / _ _,-,-._ _ _ _|
+1   /CS         CD          DAT3                 /_|1|2|3|4|5|6|7|8|
+2   DI          CMD         CMD                 ||9|-'-'-'-'-'-'- -|  WP Tab
+3   GND         GND         GND                 |'-'              || <-Unlock
+4   VDD         VDD         VDD                  ]                |  <-Lock
+5   CLK         CLK         CLK                 |                  |
+6   GND         GND         GND                 |                  |
+7   DO          DAT0        DAT0                |                  |
+8   /IRQ (SDIO) /IRQ (SDIO) DAT1 /IRQ (SDIO)    |                  |
+9   NC          NC          DAT2                |                  |
+CD  Card detect (slot only)                     |                  |
+WP  Write protect (slot only)                   '------------------'
+```
+
+## X16 Expansion Port Pinouts
+X16p has 4 identical expansion ports located at where ATX expansion slots would
+be. Physically, they are 60-pin PCB edge connectors with a 2.54mm pitch (?).
+The following pinouts are viewed from the component side.
+```
+     ^^^ To I/O side ^^^
+    -12V - 1     2 - +12V
+     GND - 3     4 - +5V
+   +3.3V - 5     6 - GND
+     GND - 7     8 - /IO3
+ AUDIO_L - 9    10 - /IO4
+     GND - 11   12 - /IO5
+ AUDIO_R - 13   14 - /IO6
+     GND - 15   16 - /IO7
+     /VP - 17   18 - /RES
+     RDY - 19   20 - GND
+    /IRQ - 21   22 - PHI2
+      BE - 23   24 - /ML
+    /NMI - 25   26 - GND
+    SYNC - 27   28 - R/W
+     GND - 29   30 - D0
+      A0 - 31   32 - D1
+      A1 - 33   34 - D2
+      A2 - 35   36 - D3
+      A3 - 37   38 - D4
+      A4 - 39   40 - D5
+      A5 - 41   42 - D6
+      A6 - 43   44 - D7
+      A7 - 45   46 - A15
+      A8 - 47   48 - A14
+      A9 - 49   50 - A13
+     A10 - 51   52 - A12
+     A11 - 53   54 - GND
+     GND - 55   56 - +3.3V
+     +5V - 57   58 - GND
+    +12V - 59   60 - -12V
+```
+
+## X16 Pinouts VERA Module
+Viewed from component side, the connector is a 2x12 pin header with a 2.54mm
+pitch.
+```
+     VCC - 1     2 - GND
+      D7 - 3     4 - D6
+      D5 - 5     6 - D4
+      D3 - 7     8 - D2
+      D1 - 9    10 - D0
+     /CS - 11   12 - /RES
+     /WR - 13   14 - /IRQ
+      A4 - 15   16 - /RD
+      A2 - 17   18 - A3
+      A0 - 19   20 - A1
+     GND - 21   22 - GND
+ AUDIO_L - 23   24 - AUDIO_R
+```
+
+## X16 Pinouts SMC Chip
+```
+              .---_---. 
+      I2C_SDA |1    20| /RES
+      HDD_LED |2  T 19| /NMI
+      I2C_SCL |3  I 18| RESET_BTN
+   KB_DAT (?) |4  N 17| NMI_BTN
+          VCC |5  Y 16| AGND
+          GND |6  8 15| AVCC
+   KB_CLK (?) |7  6 14| PWR_BTN
+MOUSE_DAT (?) |8  1 13| /PWR_ON
+MOUSE_CLK (?) |9    12| PWR_OK
+   /SMC_RESET |10   11| (?)
+              '-------' 
+```
+
+## X16 Pinouts VERA Chips
+
+### Module (rev4)
+```
+Board:      COMMANDER X16p VERA module rev4 by Frank van den Hoef (c) 2020
+U1  48-pin  ICE40UP5K-SG48ITR50         ; VERA FPGA
+U2  14-pin  74AHC00PW                   ; Quad NAND gate (for U4 enable pins)
+U3  24-pin  SN74CBTD3861PWR             ; Address bus switch + level shifter
+U4  14-pin  74CBTLV3126PW,118           ; Memory card buffer
+U5  24-pin  74LVC4245APW                ; Data bus transceiver + level shifter
+U6  16-pin  WM8524CGEDT                 ; Audio dual 24-bit D/A 
+U7  8-pin   W25Q16JVSNIQ                ; FPGA 2Mx8 config flash
+U9  5-pin   AP3417CKTR-G1               ; 1.2V switching regulator
+U10 5-pin   MIC5504-3.3YM5              ; 3.3V linear regulator
+U11 8-pin   THS7314D                    ; SDTV video amplifier
+X1  4-pin   SG5032CAN_25.000000M-TJGA3  ; Oscillator 25.0MHz
+JP1 2-pin   Flash enable jumper
+J1  24-pin  Module connector
+J2  8-pin   Programmer connector
+J3  11-pin  Memory card slot
+J4  2-pin   RCA composite video connector
+J5  15-pin  DE-15 female VGA connector
+J9  4-pin   S-Video connector
+```
+
+### VERA FPGA (rev4 module)
+```
+1   VCCIO (+3.3V)   13  VGA_R3 COMP_L5  25  D2              37  A2
+2   VGA_B3 COMP_C3  14  SPI_SO          26  D1              38  AUDIO_BCK
+3   VGA_G0 COMP_C4  15  SPI_SCK         27  D0              39  A1
+4   VGA_G1 COMP_C5  16  SPI_SS          28  /CS             40  A0
+5   VCC (+1.2V)     17  SPI_SI          29  VCCPLL (+1.2V)  41  A3 
+6   VGA_G2 COMP_L0  18  D7              30  VCC (+1.2V)     42  AUDIO_DATA
+7   CDONE           19  D6              31  /WR             43  AUDIO_LRCK
+8   /CRESET         20  D5              32  /IRQ            44  VGA_HSYNC
+9   VGA_G3 COMP_L1  21  D4              33  VCCIO (+3.3V)   45  VGA_VSYNC
+10  VGA_R0 COMP_L2  22  VCCIO (+3.3V)   34  A4              46  VGA_B0 COMP_L0
+11  VGA_R1 COMP_L3  23  D3              35  SYSCLK          47  VGA_B1 COMP_L1
+12  VGA_R2 COMP_L4  24  VPP_2V5 (+3.3V) 36  /RD             48  VGA_B2 COMP_L2
+EP  GND
 ```
 
 # VIA Versatile Interface Adapter
