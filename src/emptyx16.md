@@ -136,7 +136,7 @@ Note: The rightmost column shows the initial value on Reset
 9F3Ch - AUDIO_RATE   - Audio FIFO Sample Rate                         00h
 9F3Dh - AUDIO_DATA   - Audio FIFO Data (W)                            -
 9F3Eh - SPI_DATA     - SPI Data                                       -
-9F3Fh - SPI_CTRL     - SPI Control                                    00h (?)
+9F3Fh - SPI_CTRL     - SPI Control                                    00h
 ```
 
 ### YM2151 I/O Ports
@@ -388,14 +388,18 @@ the integer part of this virtual screen position is then used for the rest of
 the composition logic. This puts the scaling center at the top-left corner of
 an active display area.
 
-NOTE: Setting H-Scale or V-Scale above 1.0 (80h) will skip some pixels while
-rendering, potentially causing inaccurate collision detection (?)
+CAUTION: Virtual screens larger than 640x480 is not possible as the rendering
+will stop if the virtual screen position is either above it horizontally or
+vertically. Also, setting V-Scale above 1.0 (80h) will skip some pixels while
+rendering, potentially causing inaccurate collision detection. Although this is
+not a case for setting H-Scale above 1.0 (80h) as the line rendering always
+runs at a native horizontal resolution.
 
 ### 9F2Ch (DCSEL=0) - DC_BORDER - Border Color (R/W)
 When the drawing pixel is outside the active display area defined by start and
 stop registers, it will be set to a solid color at the index of this register's
-value in the palette memory. Please note that this is different from a backdrop
-color which is always color index 0.
+value in the palette memory. Please note that this is different from a
+background color which is always color index 0.
 
 ### 9F29h (DCSEL=1) - DC_HSTART - Active Display H-Start (R/W)
 ### 9F2Bh (DCSEL=1) - DC_VSTART - Active Display V-Start (R/W)
@@ -405,10 +409,9 @@ of 2. The virtual screen will always start from this point.
 
 ### 9F2Ah (DCSEL=1) - DC_HSTOP - Active Display H-Stop (R/W)
 ### 9F2Ch (DCSEL=1) - DC_VSTOP - Active Display V-Stop (R/W)
-Sets the stopping point of an active display area in native display
-coordinates (they are not scaled to the DC_xSCALE values). Horizontal value is
-in steps of 4 and vertical value is in steps of 2. The stopping point is not
-inclusive.
+Sets the stopping point of an active display area in native display coordinates
+(they are not scaled to DC_xSCALE values). Horizontal value is in steps of 4
+and vertical value is in steps of 2. The stopping point is not inclusive.
 
 These four register values are analogous to a display window in many consoles.
 The width of an active display is `(DC_HSTOP-DC_HSTART)*4` pixels and the height
@@ -528,12 +531,10 @@ Bit
 Writing reset bit to this register will empty the current buffer. The output
 volume is not linear and has the meaning as follows:
 ```
-0h=0    2h=2    4h=4    6h=6    8h=11   Ah=18   Ch=30   Eh=49
-1h=1    3h=3    5h=5    7h=8    9h=14   Bh=23   Dh=38   Fh=64
+0h=0    1h=1    2h=2    3h=3    4h=4    5h=5    6h=6    7h=8
+8h=11   9h=14   Ah=18   Bh=23   Ch=30   Dh=38   Eh=49   Fh=64
 ```
-NOTE: All values can be approximated as 2 dB steps. Volume values are taken
-from the official emulator source code and are not confirmed on real hardware
-(?)
+NOTE: All values can be approximated as 2 dB steps.
 
 ### 9F3Ch - AUDIO_RATE - Audio FIFO Sample Rate (R/W)
 Specifies the playback rate of the FIFO in `25000*n/65536` KHz.
@@ -560,9 +561,9 @@ its flag until the buffer size is higher than or equal to 1024 bytes.
 ## X16 VERA Memory Card Interface
 
 VERA uses an SPI bus, which is a 4-wire serial bus to communicate and transfer
-data with the memory card. It uses SPI Mode 0 (?) for clock and data signals.
-Its interface is quite bare and can be adapted to any SPI device. This is the
-only interface with automatic clocking and transfer in X16.
+data with the memory card. It uses SPI Mode 0 for clock and data signals. Its
+interface is quite bare and can be adapted to any SPI device. This is the only
+interface with automatic clocking and transfer in X16.
 
 ### 9F3Eh - SPI_DATA - SPI Data (R/W)
 Reads from this register returns the last received byte. Writes to this
@@ -868,9 +869,7 @@ The output volume is not linear and has the meaning as follows:
 06h=2   0Eh=3   16h=5   1Eh=9   26h=14  2Eh=23  36h=37  3Eh=59
 07h=2   0Fh=3   17h=6   1Fh=9   27h=15  2Fh=25  37h=39  3Fh=63
 ```
-NOTE: All values can be approximated as 0.5 dB steps. Volume values are taken
-from the official emulator source code and are not confirmed on real hardware
-(?)
+NOTE: All values can be approximated as 0.5 dB steps.
 
 ### Waveform
 For pulse waveform, an additional pulse width value w is used as a duty cycle.
@@ -885,8 +884,14 @@ __|       |_________|
  7 000       7777777 0
  F 012...w...9ABCDEF 0  Pulse cycle#
 ```
-Noise uses some kind of LFSR (?) Official emulator implemented it with
-`std::rand()`.
+Noise generation uses a 16-bit LFSR which runs at every master clock cycle. The
+output of this is then shifted into a 6-bit buffer which will be latched onto
+each channel on its frequency cycle and used as an output. The LFSR and buffer
+are updated as follows:
+```
+buffer = (buffer SHL 1) OR (lfsr.Bit0)
+lfsr = (lfsr SHL 1) OR (lfsr.Bit1 XOR lfsr.Bit2 XOR lfsr.Bit4 XOR lfsr.Bit15)
+```
 
 ## X16 VERA Color Palette
 
@@ -903,7 +908,7 @@ Bit
 
 ### Color Palette Indices
 ```
-00h      Backdrop Color (used when all Layer/Sprite pixels are transparent)
+00h      Background Color (used when all Layer/Sprite pixels are transparent)
 01h-FFh  256-color Palette (1bpp mode and 8bpp mode)
 01h-FFh  Sixteen 16-color Palettes (2bpp mode uses first four colors each)
 ```
@@ -957,7 +962,7 @@ Byte 6
   Bit 7-4   Collision Mask
   Bit 3-2   Enable / Priority Relative to Layers
               0 = Sprite disabled
-              1 = Sprite between backdrop and layer 0
+              1 = Sprite between background and layer 0
               2 = Sprite between layer 0 and layer 1
               3 = Sprite in front of layer 1
   Bit 1     V-flip (0=Normal, 1=Mirror vertically)
@@ -969,9 +974,6 @@ Byte 7
 ```
 
 ### Sprite Collision
-NOTE: All of the description in this section is purely based on the official
-emulator source code and has not been confirmed on real hardware (?)
-
 VERA has a feature where sprite collisions can be detected automatically on
 hardware while rendering. It does this by having a collision buffer in addition
 to a render buffer in a line. Each time a non-transparent pixel of a sprite is
@@ -991,13 +993,14 @@ For each frame:
         Generate Sprite Collide IRQ
 ```
 Note that the effect of sprites per line limit still applies here and enabled
-sprites that are on the line but are never displayed (off-screen) still adds to
-this logic. Bits 4-7 of ISR and the Sprite Collide IRQ is only updated and
+sprites that are rendered to the line buffer but are never displayed still add
+to this logic. Bits 4-7 of ISR and the Sprite Collide IRQ is only updated and
 generated once per frame at the beginning of the VBlank.
 
 CAUTION: Collisions are only detected on lines that are actually rendered.
-This can be problematic in interlaced mode where some lines are skipped per
-frame and potentially missing the collision.
+This can be problematic when V-Scale is more than 1.0 or the video output is in
+interlaced mode where some lines are skipped per frame. Which will potentially
+missing the collision.
 
 ### Sprite Priority to Other Sprites
 The sprite attribute memory location dictates the order in which sprites to be
@@ -1006,21 +1009,50 @@ have their attribute entries following its. Thus making sprite #0 has the
 highest priority and sprite #127 has the lowest priority.
 
 ### Maximum Number of Sprites per Line
-The total available sprite rendering cycles per line are 801. The required
-rendering cycles per sprite are as follows:
+The total available sprite rendering cycles per line are 798, *regardless of
+any video mode*, as sprite lookup will not continue after this amount of cycles
+has been elapsed since the start of the line. If the lookup succeeds and there
+are enough cycles left in the line, the sprite can be fully drawn.
+
+The required rendering cycles and VRAM accesses per sprite are as follows:
 ```
-Depth       Sprite Width
-            8px   16px  32px  64px
-4bpp        10    19    37    73    ; 9X+1
-8bpp        11    21    41    81    ; 10X+1
+Depth       Cycles                    VRAM accesses
+            8px   16px  32px  64px    8px   16px  32px  64px    Sprite Width
+4bpp        10    19    37    73      1     2     3     4
+8bpp        11    21    41    81      2     4     6     8
 <disabled/
-not on line>          1             ; Sprite lookup cost
+not on line>          1                        0
 ```
-Under best circumstances, up to 80 sprites (with all of them being 4bpp 8x8)
-can be displayed per screen line. The maximum number of sprites per line is
-also affected by off-screen sprites. To avoid this, either move displayed
-sprites to the beginning of the attribute memory or set a priority of 0
-(disabled) to undisplayed sprites.
+Under best circumstances, up to 80 sprites (with no other layers displayed and
+all of sprites are 4bpp 8x8) can be displayed per screen line. The maximum
+number of sprites per line is also affected by off-screen sprites. To avoid
+this, either move displayed sprites to the beginning of the attribute memory or
+set a priority of 0 (disabled) to undisplayed sprites.
+
+Additionally, it is also depends on how the video is currently displayed and if
+the CPU is causing reads/writes to VRAM. As the VRAM runs at the same master
+clock frequency and has only one 32-bit bus which is arbitrated by a 4:1 bus
+multiplexer. Since sprites have the least priority in accessing VRAM, CPU
+accesses and Layer rendering can stall their VRAM accesses during rendering and
+further increase rendering cycles amount.
+
+The required VRAM accesses per CPU accesses are as follows:
+```
+Register    Read  Write
+ADDR_x      0     1
+DATAx       1     2
+Others      0     0
+```
+The required VRAM accesses per layer are as follows:
+```
+Depth       Tile Width /  Bitmap Width
+            8px   16px    320px 640px
+1bpp        160   80      20    20
+2bpp        160   80      40    40
+4bpp        160   120     80    80
+8bpp        240   200     160   160
+```
+NOTE: Layer rendering is always active even if it's disabled in DC_VIDEO
 
 
 # X16 Peripherals
@@ -1799,11 +1831,11 @@ RTC Crystal             32.76800kHz
 VERA Oscillator         25.00000MHz
 Progressive Dot Clock   25.00000MHz (25MHz/1)
 Interlaced Dot Clock    12.50000MHz (25MHz/2)
-L/C Color Clock         3.571429MHz (25MHz/7) (?)
+L/C Color Clock         3.579545MHz (25MHz*150137/2^20)
 Progressive Line Rate   31.25000kHz (25MHz/800)
-Interlaced Line Rate    15.62500kHz (25MHz/(800*2))
+Interlaced Line Rate    15.74307kHz (25MHz/(794*2))
 Progressive Frame Rate  59.523810Hz (25MHz/(525*800))
-Interlaced Frame Rate   29.761905Hz (25MHz/(525*800*2))
+Interlaced Frame Rate   29.986805Hz (25MHz/(525*794*2))
 PSG+FIFO Sample Rate    48.82813kHz (25MHz/512)
 SPI Fast Clock          12.50000MHz (25MHz/2)
 SPI Slow Clock          390.6250kHz (25MHz/64)
@@ -1815,15 +1847,14 @@ YM2151 Oscillator       3.579545MHz
 YM2151 Sample Rate      55.93039kHz (3.58MHz/64)
 ```
 NOTE: Although it's exactly NTSC color clock, it's actually never used by VERA
-to generate NTSC video signals (?)
+to generate NTSC video signals. VERA internally has a counter for this.
 
 ## X16 Video Timings
 
 ### Horizontal Timings
 ```
-Scanline Length     800 dot cycles
-                    = 256 CPU cycles (progressive)
-                    = 512 CPU cycles (interlaced)
+Progressive Scanline Length     800 dot cycles = 256.00 CPU cycles
+Interlaced Scanline Length      794 dot cycles = 508.16 CPU cycles
 ```
 
 ### Detailed Timings
@@ -1831,20 +1862,24 @@ Scanline Length     800 dot cycles
 
 Progressive Output
 ```
-H=0 V=0             End of VBlank
-H=0..639  V=0..479  Draw Picture
-H=0 V=480           Begin of VBlank (VBlank IRQ, collision latch)
-    V=524           Last Line
-H=0 V=IRQLINE       Generate Line IRQ
+H=0        V=0          VERA starts at this time after /RES
+H=0        V=0          End of VBlank
+H=0        V=480        Begin of VBlank, set VBlank flag and collision latch
+           V=524        Last line, begin of rendering
+H=0        V=IRQLINE    Generate line IRQ
+H=0..639   V=0..479     Draw picture
+H=799                   Last dot in the line
 ```
 Interlaced Output
 ```
-H=0 V=0             End of VBlank, toggle field (?)
-H=0..639  V=0..239  Draw Picture
-H=0 V=240           Begin of VBlank (VBlank IRQ, collision latch)
-    V=261           Last Line
-    V=262 F=1       Extra Line
-H=0 V=IRQLINE/2     Generate Line IRQ
+H=0        V=0      F=0 VERA starts at this time after /RES
+H=0        V=0          End of VBlank, toggle field
+H=0        V=240        Begin of VBlank, set VBlank flag and collision latch
+           V=262    F=1 Last line, begin of rendering (Odd Frames)
+           V=263    F=0 Last line, begin of rendering (Even Frames)
+H=135      V=IRQLINE/2  Generate line IRQ
+H=135..774 V=0..239     Draw picture
+H=793                   Last dot in the line
 ```
 
 # VIA Versatile Interface Adapter
@@ -2505,7 +2540,7 @@ Bit
 ```
 CT1 and CT2 outputs correspond to physical pins of the same name on the chip.
 These are used for general-purpose output. For X16, those pins are not
-connected to anything. (?)
+connected to anything.
 
 ## YM2151 Timers
 
@@ -3485,7 +3520,7 @@ Natt Akuma
 
 ### Credits
  - Michael Steil (official X16 programmer's reference)
- - Frank van den Hoef (official VERA programmer's reference)
+ - Frank van den Hoef (official VERA source code and programmer's reference)
  - Martin Korth (nocash) (SNES/65xx CPU reference)
  - Aaron Giles, Nuke.YKT (YM2151 core and test register details)
  - Adam Chapweske (PS/2 interface articles)
