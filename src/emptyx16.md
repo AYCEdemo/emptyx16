@@ -308,9 +308,13 @@ Bit
 ```
 Any successful writes to the register data will set a busy flag for 64 clock
 cycles (about 144 CPU cycles since the chip runs slower), indicating that any
-other writes shouldn't be done during this period. It's recommended to check
-for the busy flag in a wait loop until it's cleared before writing. Setting
-the register address won't set and isn't affected by this busy flag, however.
+other writes shouldn't be done during this period. Setting the register
+address won't set and isn't affected by this busy flag, however.
+
+Unfortunately, due to timing constraints from a faster CPU, it is impossible to
+read from this chip in X16. Which means reading those flags are useless and
+shouldn't be relied on. Manual delays or waiting for other timer sources should
+be done between writes instead.
 
 
 # X16 Versatile Embedded Retro Adapter (VERA)
