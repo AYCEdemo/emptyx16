@@ -541,10 +541,11 @@ Bit
 Writing reset bit to this register will empty the current buffer. The output
 volume is not linear and has the meaning as follows:
 ```
-0h=0    1h=1    2h=2    3h=3    4h=4    5h=5    6h=6    7h=8
-8h=11   9h=14   Ah=18   Bh=23   Ch=30   Dh=38   Eh=49   Fh=64
+0h=0    1h=16   2h=32   3h=48   4h=64   5h=80   6h=96   7h=128
+8h=176  9h=224  Ah=384  Bh=368  Ch=480  Dh=608  Eh=784  Fh=1024
 ```
-NOTE: All values can be approximated as 2 dB steps.
+NOTE: All values can be approximated as 2 dB steps, and are relative to PSG's
+output level.
 
 ### 9F3Ch - AUDIO_RATE - Audio FIFO Sample Rate (R/W)
 Specifies the playback rate of the FIFO in `25000*n/65536` KHz.
@@ -563,10 +564,12 @@ AUDIO_CTRL      Data Format
 16-bit Stereo   [Left 7:0] [Signed Left 15:8] [Right 7:0] [Signed Right 15:8]
 ```
 When the FIFO is active, it will regularly retrieve the oldest sample in the
-buffer as the name implies (First In, First Out), at a rate defined in
-AUDIO_RATE register. And then decreases the buffer size. Once the buffer size
-is lower than 1024 bytes it will generate FIFO Low IRQ if it's enabled and set
-its flag until the buffer size is higher than or equal to 1024 bytes.
+buffer as the name implies (First In, First Out), and output at a rate defined
+in AUDIO_RATE register. And then decreases the buffer size. Once the buffer
+size is lower than 1024 bytes it will generate FIFO Low IRQ if it's enabled and
+set its flag until the buffer size is higher than or equal to 1024 bytes. If it
+is unable to retrieve a new sample from an empty buffer, the output will be set
+to 0.
 
 ## X16 VERA Memory Card Interface
 
@@ -1002,18 +1005,19 @@ For each frame:
     If cflag != 0 and Sprite Collide IRQ is enabled:
         Generate Sprite Collide IRQ
 ```
-Note that the effect of sprites per line limit still applies here and enabled
-sprites that are rendered to the line buffer but are never displayed still add
-to this logic. Bits 4-7 of ISR and the Sprite Collide IRQ is only updated and
-generated once per frame at the beginning of the VBlank.
+Bits 4-7 of ISR and the Sprite Collide IRQ is only updated and generated once
+per frame at the beginning of the VBlank.
 
-CAUTION: Collisions are only detected on lines that are actually rendered.
-This can be problematic when V-Scale is more than 1.0 or the video output is in
-interlaced mode where some lines are skipped per frame. Which will potentially
-missing the collision.
+CAUTION: Collisions are only detected on sprites that are actually drawn. This
+can be problematic when sprites are off the 640-pixel line buffer or per-line
+limit is reached or the line it's being drawn is skipped from a V-Scale value
+of more than 1.0 or an interlaced mode. Also, priority settings have no effect
+on the collision detection which means that *disabled* sprites that are
+successfully "drawn" can still contribute to it.
 
 ### Sprite Priority to Other Sprites
-The sprite attribute memory location dictates the order in which sprites to be
+When sprites are on the same priority (byte 6 bits 2-3 in attribute), the
+sprite attribute memory location dictates the order in which sprites to be
 displayed on top. A sprite will always display on top of the other sprites that
 have their attribute entries following its. Thus making sprite #0 has the
 highest priority and sprite #127 has the lowest priority.
@@ -1716,7 +1720,7 @@ Bit
 7       Trim Sign (1=Subtract->Faster, 0=Add->Slower)
 6-0     Trim Value (0=Disable Trimming)
 ```
-The values can be treated as one's complement number n which will add/subtract
+The values can be treated as a sign-magnitude number n which will add/subtract
 2n cycles every minute normally or at 128Hz when Coarse Trim is enabled.
 
 ### 0Ah - ALM0SEC - Alarm 0 Seconds (R/W)
@@ -2920,7 +2924,7 @@ Bit
 5-4     Detune 1 (DT1) Amount (0-3)
 3-0     Phase Multiply (MUL) (0=0.5x, 1=1x..15=15x)
 ```
-Detune 1 values can be treated as a 3-bit one's complement number. This will
+Detune 1 values can be treated as a 3-bit sign-magnitude number. This will
 apply a tiny change to the phase step in each slot's phase generator. Resulting
 in a slight inharmonic, strings-like timbre to the voice. The amount to
 add/subtract to the phase step also depends on the current Key Code value as
