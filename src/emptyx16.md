@@ -3230,14 +3230,14 @@ output. If AMS is disabled, it simply ignores the amplitude modulation.
 Bit
 7       Noise Enable (0=Disable, 1=Enable)
 6-5     Not Used
-4-0     Noise Frequency (0-31) ; clk/n/32 Hz (usually)
+4-0     Noise Frequency (0-31) ; clk/(31-n)/32 Hz (usually)
 ```
 When a noise is enabled, Slot 31 (Channel 7 C2 function)'s output is replaced
 with a noise generator output. The generator uses a 17-bit LFSR to generate a
 a noise at a specified frequency then multiply the output bit with Slot 31's
 current envelope generator value (with TL and AM applied). Note that the value
 here is treated as a *linear* ratio instead of dB attenuation. A noise
-frequency value of 0 is the same as 1.
+frequency value of 31 is the same as 30.
 
 # CPU 65C02 Microprocessor
 
