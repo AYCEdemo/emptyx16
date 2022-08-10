@@ -143,7 +143,8 @@ Note: The rightmost column shows the initial value on Reset
 ### YM2151 I/O Ports
 ```
 9F40h - YM2151 Register Address (W)
-9F41h - YM2151 Register Data (W) / Status (R)
+9F41h - YM2151 Register Data (W)
+9F4xh - YM2151 Status (R)
 ```
 
 ### Further Memory
@@ -284,10 +285,10 @@ respective ports, then steps the address once.
 [X16 VERA Memory and I/O Map (VRAM)](#x16-vera-memory-and-io-map-vram)  
 
 ## X16 YM2151 Access
-Due to the chip's large address space and low pin count, its address and data
-pins are multiplexed. Then, an address/data select pin is provided. X16
-connects this pin to the lowest address pin as usual. Providing I/O ports to
-the chip's registers.
+Due to the chip's large address space for writing and low pin count, its write
+address and data pins are multiplexed. Then, an address/data select pin is
+provided. X16 connects this pin to the lowest address pin as usual.
+Providing I/O ports to the chip's registers.
 
 For more information about this chip and its registers, see:  
 [YM2151 FM Operator Type-M (OPM)](#ym2151-fm-operator-type-m-opm)  
@@ -295,10 +296,14 @@ For more information about this chip and its registers, see:
 ### 9F40h - YM2151 Register Address (W)
 Sets the chip's register address.
 
-### 9F41h - YM2151 Register Data (W) / Status (R)
+### 9F41h - YM2151 Register Data (W)
 Writes to the chip at the currently set register address. Writes here will not
-do any address auto-steps. Reads from the chip will always return this status
-byte no matter what the currently set register address is:
+do any address auto-steps.
+
+### 9F4xh - YM2151 Status (R)
+Reads from the chip will always return this status byte no matter what the
+currently set register address is. Note that the chip ignores the address/data
+select pin for this so this byte can be read from either 9F40h or 9F41h.
 ```
 Bit
 7       Busy Flag (1=Busy)
