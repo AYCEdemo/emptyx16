@@ -58,7 +58,7 @@ YM2151      8 channels, phase-modulated sine
 ```
 PS/2 port   Separate connector for Keyboard and Mouse
 Joypad      2x SNES controller ports
-IEC         Commodore serial bus
+Serial      Commodore serial bus
 Memory card SPI mode MMC interface
 ```
 
@@ -1081,7 +1081,7 @@ This section describes all interfaces and peripherals external to the X16.
 [VIA Connections](#via-connections)  
 [X16 PS/2 Interface (Keyboard/Mouse)](#x16-ps2-interface-keyboardmouse)  
 [X16 Joypad Interface (SNES Controllers)](#x16-joypad-interface-snes-controllers)  
-[X16 IEC Interface (Commodore Disk Drives/Printers)](#x16-iec-interface-commodore-disk-drivesprinters)  
+[X16 Serial Bus Interface (Commodore Disk Drives/Printers)](#x16-serial-bus-interface-commodore-disk-drivesprinters)  
 [X16 VERA Memory Card Interface](#x16-vera-memory-card-interface)  
 
 ## VIA Connections
@@ -1110,11 +1110,11 @@ CA2     Not Used (?)
 PB0     PS/2 Mouse Data
 PB1     PS/2 Mouse Clock
 PB2     I2C SDA
-PB3     IEC ATN Out
-PB4     IEC CLK Out
-PB5     IEC DATA Out
-PB6     IEC CLK In
-PB7     IEC DATA In
+PB3     Serial ATN Out
+PB4     Serial CLK Out
+PB5     Serial DATA Out
+PB6     Serial CLK In
+PB7     Serial DATA In
 CB1     Not Used (?)
 CB2     I2C SCL
 ```
@@ -1491,9 +1491,9 @@ http://problemkaputt.de/fullsnes.htm
 http://problemkaputt.de/fullsnes.txt
 
 
-## X16 IEC Interface (Commodore Disk Drives/Printers)
+## X16 Serial Bus Interface (Commodore Disk Drives/Printers)
 
-X16 has one connector for Commodore Serial IEEE-488 Bus (shortly referred as
+X16 has one connector for Commodore Serial IEEE-488 Bus (usually referred to as
 IEC Bus). Which is a cheaper serial version of IEEE-488 interface used
 throughout Commodore's 8-bit computers since VIC-20 for disk drives and
 printers. The interface is a 3-wire serial containing ATN line which works
@@ -1503,9 +1503,6 @@ around. Allowing many devices to be on a same bus.
 
 (under construction)
 
-> At the time of writing, support for this bus is not even implemented yet in
-> Kernal. I have a feeling that it will likely be removed in the future so I'm
-> not going to risk it and finish this section later.
 
 # X16 I2C Bus
 
@@ -1907,7 +1904,7 @@ H=793                   Last dot in the line
 ### External Connectors
 [X16 Power Supply](#x16-power-supply)  
 [X16 PS/2 Connector Pinouts](#x16-ps2-connector-pinouts)  
-[X16 IEC Connector Pinouts](#x16-iec-connector-pinouts)  
+[X16 Serial Connector Pinouts](#x16-serial-connector-pinouts)  
 [X16 Joypad Connector Pinouts](#x16-joypad-connector-pinouts)  
 [X16 Audio/Video Connector Pinouts](#x16-audiovideo-connector-pinouts)  
 [X16 Memory Card Pinouts](#x16-memory-card-pinouts) 
@@ -1949,7 +1946,7 @@ H=793                   Last dot in the line
 6   Not Connected   Not Connected         '.___.'
 ```
 
-## X16 IEC Connector Pinouts
+## X16 Serial Connector Pinouts
 ```
 1   Service Request                         _ _
 2   Ground                                .' - '.
@@ -3776,7 +3773,7 @@ website repository linked below.
 Natt Akuma
 
 ### Credits
- - Michael Steil (official X16 programmer's reference)
+ - Michael Steil (official X16 programmer's reference and serial bus articles)
  - Frank van den Hoef (official VERA source code and programmer's reference)
  - Martin Korth (nocash) (SNES/65xx CPU reference)
  - Aaron Giles, Nuke.YKT (YM2151 core and test register details)
