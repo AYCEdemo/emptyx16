@@ -833,7 +833,7 @@ Depth
 For each bar, the color ID for each pixel A to H from left to right are packed
 together from left to right. The bit length of each color ID depends on the
 color depth setting. Making each bar occupy 1, 2, 4 or 8 bytes total. A color
-ID of 0 always mean transparent except in a certain 1bpp tile mode.
+ID of 0 always mean transparent pixels.
 
 To make up tiles which can be up to 16x16 pixels in size for Layers, and up to
 64x64 for sprites, each bars are combined as follows. With X being a tile width
