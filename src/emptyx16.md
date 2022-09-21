@@ -316,10 +316,12 @@ cycles (about 144 CPU cycles since the chip runs slower), indicating that any
 other writes shouldn't be done during this period. Setting the register
 address won't set and isn't affected by this busy flag, however.
 
-Unfortunately, due to timing constraints from a faster CPU, it is impossible to
-read from this chip in X16. Which means reading those flags are useless and
-shouldn't be relied on. Manual delays or waiting for other timer sources should
-be done between writes instead.
+### YM2151 Access Clock Stretching
+Due to timing constraints from a faster CPU, there's an additional circuitry
+which temporarily slows down the CPU by 4 times every time its address output
+is 9F4xh. This is to make sure reads/writes to the slower YM2151 are always
+successful. In other words, reading/writing to YM2151 has an extra 3 cycles
+wait per instruction (6 cycles for RMW instructions).
 
 
 # X16 Versatile Embedded Retro Adapter (VERA)
