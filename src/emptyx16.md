@@ -11,6 +11,7 @@ Commander X16 hardware specifications
 [X16 I2C Bus](#x16-i2c-bus)  
 [X16 Timings](#x16-timings)  
 [X16 Pinouts](#x16-pinouts)  
+[X16 Hardware History](#x16-hardware-history)  
 [VIA Versatile Interface Adapter](#via-versatile-interface-adapter)  
 [YM2151 FM Operator Type-M (OPM)](#ym2151-fm-operator-type-m-opm)  
 [CPU 65C02 Microprocessor](#cpu-65c02-microprocessor)  
@@ -74,24 +75,23 @@ Memory card SPI mode MMC interface
 
 ### VIA Versatile Interface Adapter (R/W)
 
-For below ports, x = Device number 0..1
 ```
-9Fx0h - PRB  - Port B Input/Output
-9Fx1h - PRA  - Port A Input/Output
-9Fx2h - DDRB - Port B Data Direction
-9Fx3h - DDRA - Port A Data Direction
-9Fx4h - T1L  - T1 Counter (low 8 bits)
-9Fx5h - T1H  - T1 Counter (high 8 bits)
-9Fx6h - T1LL - T1 Latch (low 8 bits)
-9Fx7h - T1LH - T1 Latch (high 8 bits)
-9Fx8h - T2L  - T2 Counter (low 8 bits)
-9Fx9h - T2H  - T2 Counter (high 8 bits)
-9FxAh - SR   - Shift Register
-9FxBh - ACR  - Auxiliary Control Register
-9FxCh - PCR  - Peripheral Control Register
-9FxDh - IFR  - Interrupt Flags Register
-9FxEh - IER  - Interrupt Enable Register
-9FxFh - PRA2 - Port A Input/Output Without Handshaking
+9F00h - PRB  - Port B Input/Output
+9F01h - PRA  - Port A Input/Output
+9F02h - DDRB - Port B Data Direction
+9F03h - DDRA - Port A Data Direction
+9F04h - T1L  - T1 Counter (low 8 bits)
+9F05h - T1H  - T1 Counter (high 8 bits)
+9F06h - T1LL - T1 Latch (low 8 bits)
+9F07h - T1LH - T1 Latch (high 8 bits)
+9F08h - T2L  - T2 Counter (low 8 bits)
+9F09h - T2H  - T2 Counter (high 8 bits)
+9F0Ah - SR   - Shift Register
+9F0Bh - ACR  - Auxiliary Control Register
+9F0Ch - PCR  - Peripheral Control Register
+9F0Dh - IFR  - Interrupt Flags Register
+9F0Eh - IER  - Interrupt Enable Register
+9F0Fh - PRA2 - Port A Input/Output Without Handshaking
 ```
 
 ### VERA Versatile Embedded Retro Adapter (R/W)
@@ -103,9 +103,10 @@ Note: The rightmost column shows the initial value on Reset
 9F23h - DATA0        - VRAM Data Port 0                               00h
 9F24h - DATA1        - VRAM Data Port 1                               00h
 9F25h - CTRL         - Control                                        00h
-9F26h - IEN          - Interrupt Enable / Line Compare (upper 1 bit)  00h
+9F26h - IEN          - Int. Enable / Line Comp. / Num. (upper 1 bit)  00h
 9F27h - ISR          - Interrupt / Status Register                    00h
-9F28h - IRQLINE_L    - Interrupt Line Compare (lower 8 bits)          00h
+9F28h - IRQLINE_L    - Interrupt Line Compare (lower 8 bits) (W)      -
+9F28h - SCANLINE_L   - Current Line Number (lower 8 bits) (R)         00h
 
         (DCSEL=0)
 9F29h - DC_VIDEO     - Active Display Control                         00h
@@ -118,6 +119,9 @@ Note: The rightmost column shows the initial value on Reset
 9F2Ah - DC_HSTOP     - Active Display H-Stop                          A0h
 9F2Bh - DC_VSTART    - Active Display V-Start                         00h
 9F2Ch - DC_VSTOP     - Active Display V-Stop                          F0h
+
+        (DCSEL=63)
+9F29h..9F2Ch         - Version Number (R)
 
 9F2Dh - L0_CONFIG    - L0 Mode and Map Size                           00h
 9F2Eh - L0_MAPBASE   - L0 Map Base                                    00h
@@ -140,7 +144,7 @@ Note: The rightmost column shows the initial value on Reset
 9F3Fh - SPI_CTRL     - SPI Control                                    00h
 ```
 
-### YM2151 I/O Ports
+### YM2151 I/O Ports (2MHz Speed)
 ```
 9F40h - YM2151 Register Address (W)
 9F41h - YM2151 Register Data (W)
@@ -149,10 +153,12 @@ Note: The rightmost column shows the initial value on Reset
 
 ### Further Memory
 ```
-9F42h..9F5Fh - Reserved
-9F60h..9FFFh - Expansion
+9F10h..9F1Fh - 2nd VIA Expansion
+9F42h..9F5Fh - Reserved (2MHz Speed)
+9F60h..9F9Fh - Expansion (8MHz Speed)
+9FA0h..9FFFh - Expansion (2MHz Speed)
 A000h..BFFFh - Banked RAM
-C000h..FFFFh - Banked System ROM
+C000h..FFFFh - Banked System ROM / Expansion Memory
 ```
 
 ### VERA Registers (internal to VERA, not the Main CPU)
@@ -163,12 +169,20 @@ C000h..FFFFh - Banked System ROM
 
 [X16 Memory Map](#x16-memory-map)  
 [X16 Memory Control](#x16-memory-control)  
+[X16 VERA Access](#x16-vera-access)  
+[X16 YM2151 Access](#x16-ym2151-access)  
+[X16 System ROM Flash Access](#x16-system-rom-flash-access)  
 
 ### System ROM
 System ROM is mapped directly to the CPU bus. Only a 16 KiB bank window of it
 is mapped at a time. Since the banking area also covers a CPU interrupt vectors
-region (FFFAh-FFFFh) and not all System ROM banks has them. It's recommended to
-disable interrupts when accessing outside bank 0 of the System ROM.
+region (FFFAh-FFFFh) and not all System ROM banks has them. It is recommended
+to disable interrupts when accessing outside bank 0 of the System ROM.
+
+### Expansion Memory
+Since only first 32 banks of the system ROM are mapped directly to the CPU bus,
+the remaining 224 banks are left unoccupied which allows expansion
+cartridges to map its memory here.
 
 ### Fixed and Banked RAM
 Fixed and Banked RAM are both mapped directly to the CPU bus. Fixed RAM has
@@ -208,7 +222,7 @@ Bank    Offset      Content
         9F00h-9FFFh I/O Area
 00h-FFh:A000h-BFFFh Banked RAM (max 2 MiB) (256x8K)
 00h-1Fh:C000h-FFFFh System ROM (512 KiB) (32x16K)
-20h-FFh:C000h-FFFFh Unused (mirrors of System ROM)
+20h-FFh:C000h-FFFFh Expansion Memory (max 3.5 MiB) (224x16K)
 ```
 Additional memory, not mapped to CPU address (accessible only via I/O):
 ```
@@ -235,8 +249,7 @@ Bit
 ### 0001h - Current ROM Bank (R/W)
 ```
 Bit
-7-5     Not used
-4-0     System ROM bank number
+7-0     System ROM bank number / ROMBx pin output
 ```
 
 Note that the actual values of these two registers are external to the RAM and
@@ -285,6 +298,7 @@ respective ports, then steps the address once.
 [X16 VERA Memory and I/O Map (VRAM)](#x16-vera-memory-and-io-map-vram)  
 
 ## X16 YM2151 Access
+
 Due to the chip's large address space for writing and low pin count, its write
 address and data pins are multiplexed. Then, an address/data select pin is
 provided. X16 connects this pin to the lowest address pin as usual.
@@ -316,12 +330,75 @@ cycles (about 144 CPU cycles since the chip runs slower), indicating that any
 other writes shouldn't be done during this period. Setting the register
 address won't set and isn't affected by this busy flag, however.
 
-### YM2151 Access Clock Stretching
+### YM2151 and 2MHz I/O Access Clock Stretching
 Due to timing constraints from a faster CPU, there's an additional circuitry
 which temporarily slows down the CPU by 4 times every time its address output
-is 9F4xh. This is to make sure reads/writes to the slower YM2151 are always
-successful. In other words, reading/writing to YM2151 has an extra 3 cycles
-wait per instruction (6 cycles for RMW instructions).
+is in 9F40h-9F5Fh and 9FA0h-9FFFh (IO3,6,7,8 pins physically). This is to make
+sure reads/writes to the slower I/O interface are always successful. In other
+words, reading/writing to it has an extra 3-cycle wait per instruction (6
+cycles for RMW instructions).
+
+## X16 System ROM Flash Access
+
+X16's System ROM is a flash memory which can be erased and programmed with a
+new data. Providing that the physical write enable jumper to it is connected.
+This is used for updating the system firmware and software from an external
+memory without powering off the machine. Like any NOR flash memory, a special
+write command sequence is needed. The following sub-sections describe possible
+command write sequences. Note that addresses are in ROM bank:CPU address format
+due to how the ROM is connected - they are internally 5555h and 2AAAh.
+
+### Flash Detection
+```
+(01:D555h)=AAh
+(00:EAAAh)=55h
+(01:D555h)=90h  ; enter software ID mode
+X=(00:C000h)    ; manufacturer ID
+Y=(00:C001h)    ; device ID
+(01:D555h)=AAh
+(00:EAAAh)=55h
+(01:D555h)=F0h  ; exit software ID mode
+```
+X and Y values depend on the ROM chip used on the board, possible values are:
+```
+X   Y   Chip
+BFh B7h SST39SF040
+```
+
+### Erase Entire Chip
+```
+(01:D555h)=AAh
+(00:EAAAh)=55h
+(01:D555h)=80h
+(01:D555h)=AAh
+(00:EAAAh)=55h
+(01:D555h)=10h
+repeat X=(01:D555h) until X==FFh
+```
+
+### Erase 4 KiB Sector
+```
+(01:D555h)=AAh
+(00:EAAAh)=55h
+(01:D555h)=80h
+(01:D555h)=AAh
+(00:EAAAh)=55h
+(nn:n000h)=30h
+repeat X=(nn:n000h) until X==FFh
+```
+
+### Program Byte
+The 4 KiB sector where the destination address exist must be fully erased
+before programming
+```
+for i=first to last
+    (01:D555h)=AAh
+    (00:EAAAh)=55h
+    (01:D555h)=A0h
+    (nnnnnn+i)=data[i]
+    repeat X=(nnnnnn+i) until X==data[i]
+next i
+```
 
 
 # X16 Versatile Embedded Retro Adapter (VERA)
@@ -353,18 +430,32 @@ ports.
 ```
 Bit
 7       Reset Adapter (1=Reset)
-6-2     Not Used
-1       Display Composer Register Select (DCSEL)
+6-1     Display Composer Register Select (DCSEL)
 0       Address Port Select (ADDRSEL)
 ```
-Writing reset bit to this register will reset the entire adapter's operation.
-The main chip will reconfigure itself and initialize all registers.
+Writing reset bit to this register will reset the entire adapter's operation
+and initialize all registers. Current video and sound output will be lost.
+In boards with a dedicated VERA chip, this operation completely resets the FPGA
+which can take milliseconds to reconfigure. A detection for when it is
+configured can be done by repeatedly writing a data to a register and reading
+it back until it stays.
 
-DCSEL selects which Display Composer register to access in location
+DCSEL selects which Display Composer register bank to access in location
 9F29h-9F2Ch. ADDRSEL selects which port to read/write address when accessing
 VERA memory from the CPU. For more information, see their respective entries:  
 [X16 VERA Display Composer](#x16-vera-display-composer)  
 [X16 VERA Memory Access](#x16-vera-memory-access)
+
+### 9F29h..9F2Ch (DCSEL=63) - Version Number (R)
+```
+Byte 0  Always 56h ('V')
+Byte 1  Major Version Number
+Byte 2  Minor Version Number
+Byte 3  Build Number
+```
+Writing 63 to DCSEL will select this read-only register. It contains a version
+number information of this VERA hardware. For example, a "community release
+v0.1.1" FPGA configuration contains bytes 56h 00h 01h 01h in order.
 
 ## X16 VERA Display Composer
 
@@ -375,35 +466,52 @@ Bit
 6       Sprites (0=Disable, 1=Enable)
 5       Layer 1 (0=Disable, 1=Enable)
 4       Layer 0 (0=Disable, 1=Enable)
-3       Not Used
+3       Interlacing (0=Enable, 1=Disable)
 2       Chroma Output (no effect in RGB) (0=Enable, 1=Disable)
-1-0     Output Mode
-          0 = No Video
-          1 = Progressive RGB
-          2 = Interlaced Luma/Chroma
-          3 = Interlaced RGB
+1       Sync Generation (0=Separate, 1=Composite)
+0       Output Mode (0=Luma/Chroma, 1=RGB)
 ```
-VERA natively outputs in a progressive RGB format with a line rate of 31.5 kHz.
-Which the system also boots in that mode. It is also capable of outputting at
-half a line rate of 15.75 kHz with interlacing. However, it comes with a
-trade-off that every other lines will not be rendered at all. Also, interlaced
-mode has different video timings compared to progressive mode.
+Notable bits 0-3 combination:
+```
+Mode
+0       Display off
+1       31.5kHz RGB 480p (VGA)
+2       15.75kHz Composite 480i Color (NTSC)
+3       15.75kHz RGB 480i
+6       15.75kHz Composite 480i Monochrome
+9       15.75kHz RGB 240p VGA Sync
+10      15.75kHz Composite 240p Color
+11      15.75kHz RGB 240p Composite Sync
+14      15.75kHz Composite 240p Monochrome
+```
+VERA natively outputs in a progressive RGB format with a line rate of 31.5kHz.
+Which the system also boots in that mode by default. It is also capable of
+outputting at half a line rate of 15.75kHz with or without interlacing.
+However, it comes with a trade-off that every other lines will not be rendered
+at all. Also, these modes have different video timings.
 
-Luma/Chroma output can only be output in interlaced mode. The adapter also has
+Luma/Chroma output can only be output in 15.75kHz modes. The adapter also has
 a hardware to modulate Luma/Chroma signals into NTSC composite video. However,
 most NTSC CRT TVs can only display around the middle 592x448 region. So, this
 overscan should be taken into account when using composite output.
+
+Even though interlacing is disabled in 15.75kHz modes (240p), the VERA still
+alternatively outputs only odd lines and even lines in each frame as if it's
+interlacing. This causes adjacent lines to be temporally blended together.
+
+CAUTION: Enabling layers mid-screen can cause a garbage line to be displayed as
+the renderer was not active to fill in a data for the current displaying line.
 
 ### 9F2Ah (DCSEL=0) - DC_HSCALE - Active Display H-Scale (R/W)
 ### 9F2Bh (DCSEL=0) - DC_VSCALE - Active Display V-Scale (R/W)
 Scales the entire rendering output by a factor of 128/x. A value of 80h means
 no scaling. This is mainly used for displaying low resolution graphics.
 
-Scaling is probably done by adding this fractional H-Scale value each drawn
-pixel and V-Scale value each drawn line to the virtual screen position. Then
-the integer part of this virtual screen position is then used for the rest of
-the composition logic. This puts the scaling center at the top-left corner of
-an active display area.
+Scaling is done by adding this fractional H-Scale value each drawn pixel and
+V-Scale value each drawn line to the virtual screen position. Then the integer
+part of this virtual screen position is then used for the rest of composition
+logic. This puts the scaling center at the top-left corner of an active display
+area.
 
 CAUTION: Virtual screens larger than 640x480 is not possible as the rendering
 will stop if the virtual screen position is either above it horizontally or
@@ -487,17 +595,18 @@ In bitmap mode, this has no effect.
 
 ## X16 VERA Interrupts
 
-### 9F26h - IEN - Interrupt Enable / Line Compare (upper 1 bit) (R/W)
+### 9F26h - IEN - Interrupt Enable / Current Line Number (upper 1 bit) / Line Compare (upper 1 bit) (R/W)
 ```
 Bit
-7       Interrupt Line Compare (upper 1 bit)
-6-4     Not Used
+7       Interrupt Line Compare (upper 1 bit) (Write-only)
+6       Current Line Number (upper 1 bit) (Read-only)
+5-4     Not Used
 3       FIFO Low IRQ (0=Disable, 1=Enable)
 2       Sprite Collide IRQ (0=Disable, 1=Enable)
 1       Line IRQ (0=Disable, 1=Enable)
 0       VBlank IRQ (0=Disable, 1=Enable)
 ```
-For details about Line Compare bit, see IRQLINE_L (9F28h) entry.
+For details about Line Compare/Number bits, see IRQLINE_L (9F28h) entry.
 
 ### 9F27h - ISR - Interrupt / Status Register (R/W)
 ```
@@ -525,14 +634,23 @@ last display line). Its flags are not automatically cleared.
 All of the 4 flags get set even if their respective interrupts are disabled.
 Writing a bit 1 to one of the bits 0-2 will clear that interrupt status.
 
-### 9F28h - IRQLINE_L - Interrupt Line Compare (lower 8 bits) (R/W)
+### 9F28h - SCANLINE_L - Current Line Number (lower 8 bits) (R)
+### 9F28h - IRQLINE_L - Interrupt Line Compare (lower 8 bits) (W)
 
-Specifies the *display* line number to generate IRQ at. It is neither scaled
+When read, returns the current *display* line number. When write, Specifies the
+*display* line number to generate IRQ at. This number is neither scaled
 with the DC_VSCALE register nor offset with the DC_VSTART register. In
-interlaced mode, bit 0 is ignored and will generate IRQ in both two frames even
+interlaced mode, bit 0 is fixed to the current odd/even field value when read
+and is ignored when write - it will generate IRQ in both two frames even
 if that line is skipped in either field of the display. Line comparison is only
 done on drawing lines which means a value higher than 479 will never generate
-Line IRQs.
+Line IRQs. Also for lines 512-525 (during VBlank), this is always read 511.
+
+CAUTION: Since VERA renders to a line buffer first then read it out to the
+screen in the next line, changes made to layer settings and VRAM will not be
+visible until the next line. This does not apply to display composer settings
+and palette data as they will take effect immediately. Keep this in mind when
+doing raster effects.
 
 ## X16 VERA Audio FIFO
 
@@ -540,7 +658,7 @@ Line IRQs.
 ```
 Bit
 7       FIFO Full (R) / FIFO Reset (1=Reset) (W)
-6       Not Used
+6       FIFO Empty (Read-only)
 5       FIFO Sample Size (0=8-bit, 1=16-bit)
 4       FIFO Sample Channels (0=Mono, 1=Stereo)
 3-0     FIFO Output Volume (0=Silent, 15=Loudest)
@@ -551,12 +669,13 @@ volume is not linear and has the meaning as follows:
 0h=0    1h=16   2h=32   3h=48   4h=64   5h=80   6h=96   7h=128
 8h=176  9h=224  Ah=384  Bh=368  Ch=480  Dh=608  Eh=784  Fh=1024
 ```
-NOTE: All values can be approximated as 2 dB steps, and are relative to PSG's
+NOTE: All values can be approximated as 2.2 dB steps, and are relative to PSG's
 output level.
 
 ### 9F3Ch - AUDIO_RATE - Audio FIFO Sample Rate (R/W)
 Specifies the playback rate of the FIFO in `25000*n/65536` KHz.
-A value of 0 or anything greater than 128 will stop playback.
+A value of 0 will stop playback. Values higher than the maximum 128 is invalid and
+effectively equals to 256-n.
 
 ### 9F3Dh - AUDIO_DATA - Audio FIFO Data (W)
 Writes one byte to the FIFO and increases the current buffer size by one. Any
@@ -781,6 +900,13 @@ Bit
 0       Always 1
 ```
 
+### VERA Configuration Flash Access
+In boards with a dedicated VERA chip, there is a jumper to permanently enable
+an accesss to the configuration flash memory during a normal operation. This
+allows VERA FPGA's configuration to be reprogrammed in-system through the same
+SPI interface. However, SPI flash memory have different commands from memory
+cards and the topic of programming it is outside of this document's scope.
+
 ## X16 VERA Memory and I/O Map (VRAM)
 
 ### VERA Memory Map
@@ -880,14 +1006,18 @@ Byte 3
 ### Volume
 The output volume is not linear and has the meaning as follows:
 ```
-00h=0   08h=2   10h=4   18h=6   20h=10  28h=16  30h=26  38h=42
-01h=1   09h=2   11h=4   19h=7   21h=11  29h=17  31h=28  39h=44
-02h=1   0Ah=2   12h=4   1Ah=7   22h=11  2Ah=18  32h=29  3Ah=47
-03h=1   0Bh=3   13h=4   1Bh=7   23h=12  2Bh=19  33h=31  3Bh=50
-04h=2   0Ch=3   14h=5   1Ch=8   24h=13  2Ch=21  34h=33  3Ch=52
-05h=2   0Dh=3   15h=5   1Dh=8   25h=14  2Dh=22  35h=35  3Dh=56
-06h=2   0Eh=3   16h=5   1Eh=9   26h=14  2Eh=23  36h=37  3Eh=59
-07h=2   0Fh=3   17h=6   1Fh=9   27h=15  2Fh=25  37h=39  3Fh=63
+00h=0   04h=16  10h=33  1Ch=67  28h=135 34h=271
+        05h=17  11h=35  1Dh=71  29h=143 35h=287
+        06h=19  12h=38  1Eh=76  2Ah=152 36h=304
+        07h=20  13h=40  1Fh=80  2Bh=161 37h=322
+        08h=21  14h=42  20h=85  2Ch=170 38h=341
+        09h=22  15h=45  21h=90  2Dh=181 39h=362
+        0Ah=23  16h=47  22h=95  2Eh=191 3Ah=383
+        0Bh=25  17h=50  23h=101 2Fh=203 3Bh=406
+        0Ch=26  18h=53  24h=107 30h=215 3Ch=430
+01h=14  0Dh=28  19h=57  25h=114 31h=228 3Dh=456
+02h=15  0Eh=30  1Ah=60  26h=120 32h=241 3Eh=483
+03h=16  0Fh=32  1Bh=64  27h=128 33h=256 3Fh=512
 ```
 NOTE: All values can be approximated as 0.5 dB steps.
 
@@ -1073,7 +1203,8 @@ Depth       Tile Width /  Bitmap Width
 4bpp        160   120     80    80
 8bpp        240   200     160   160
 ```
-NOTE: Layer rendering is always active even if it's disabled in DC_VIDEO
+NOTE: Layer rendering is not active and will not access VRAM when it's disabled
+in DC_VIDEO
 
 
 # X16 Peripherals
@@ -1081,119 +1212,223 @@ NOTE: Layer rendering is always active even if it's disabled in DC_VIDEO
 This section describes all interfaces and peripherals external to the X16.
 
 [VIA Connections](#via-connections)  
-[X16 PS/2 Interface (Keyboard/Mouse)](#x16-ps2-interface-keyboardmouse)  
 [X16 Joypad Interface (SNES Controllers)](#x16-joypad-interface-snes-controllers)  
 [X16 Serial Bus Interface (Commodore Disk Drives/Printers)](#x16-serial-bus-interface-commodore-disk-drivesprinters)  
+[X16 SMC PS/2 Interface (Keyboard/Mouse)](#x16-smc-ps2-interface-keyboardmouse)  
 [X16 VERA Memory Card Interface](#x16-vera-memory-card-interface)  
 
 ## VIA Connections
 
-X16 uses two VIA chips for general purpose I/O and timers. These provide the
-rest of interfaces not covered by VERA. Both two chips run at the system clock
+X16 uses a VIA chip for general purpose I/O and timers. These provide the
+rest of interfaces not covered by VERA. This chip runs at the system clock
 (PHI2 input is connected to it) and can be accessed from the CPU bus. For
 details about the chip itself and its registers, see:  
 [VIA Versatile Interface Adapter](#via-versatile-interface-adapter)  
 
-### 1st VIA (9F0xh)
 Every peripheral described in this section and the I2C bus are all wired to the
-first VIA's I/O pins as follows. The IRQ out from this chip is connected to the
-NMI line of the CPU.
+VIA's I/O pins as follows. The IRQ out from this chip is connected to the NMI
+line of the CPU.
 ```
-PA0     PS/2 Keyboard Data
-PA1     PS/2 Keyboard Clock
+PA0     I2C SDA
+PA1     I2C SCL
 PA2     Joypad Strobe (Both 2 Ports) (-> STB)
 PA3     Joypad Clock (Both 2 Ports) (-> CK1/CK2)
-PA4     Joypad 4 Data (Port 2) (-> IN4) (?)
-PA5     Joypad 3 Data (Port 1) (-> IN3) (?)
-PA6     Joypad 2 Data (Port 2) (-> IN2) (?)
-PA7     Joypad 1 Data (Port 1) (-> IN1) (?)
-CA1     Not Used (?)
-CA2     Not Used (?)
-PB0     PS/2 Mouse Data
-PB1     PS/2 Mouse Clock
-PB2     I2C SDA
+PA4     Joypad 4 Data (Port 2) (-> IN4)
+PA5     Joypad 3 Data (Port 1) (-> IN3)
+PA6     Joypad 2 Data (Port 2) (-> IN2)
+PA7     Joypad 1 Data (Port 1) (-> IN1)
+CA1     Not Used
+CA2     Not Used
+PB0     Not Used
+PB1     Not Used
+PB2     Not Used
 PB3     Serial ATN Out
 PB4     Serial CLK Out
 PB5     Serial DATA Out
 PB6     Serial CLK In
 PB7     Serial DATA In
-CB1     Not Used (?)
-CB2     I2C SCL
+CB1     Serial SRQ
+CB2     Not Used
 ```
 Several internal system peripherals and memory are connected to the I2C Bus.
 They are described in the following section:  
 [X16 I2C Bus](#x16-i2c-bus)
 
-### 2nd VIA (9F1xh)
-Every I/O pin connections on the second VIA are not used and exposed through
-the user port header. The IRQ out from this chip is connected to the IRQ line
-of the CPU.
 
-## X16 PS/2 Interface (Keyboard/Mouse)
+## X16 Joypad Interface (SNES Controllers)
+
+X16 has 2 SNES-compatible joypad connectors for up to 4 connected joypads at
+the same time. However, being connected to VIA, there is no auto-read feature
+or even legacy auto-shift on read feature like in SNES. Instead, all read/write
+operations have to be done manually in a bit-banging fashion.
+
+### X16 Joypad Access
+The below timing diagram shows how to read a data from joypads that use typical
+Parallel-Load Shift Registers. STB is set low in order to load all parallel
+inputs into the shift register. Any CLK signals during STB low will be ignored.
+Once STB is set high, any rising edge of CLK signal will shift the register out
+by one bit. If nothing is connected to a port, the data at that port will
+be pulled up and always read 1.
+```
+     __       ________________________________
+STB    |_____|
+     ___   _   _   _   _   _   _   _   _   ___
+CLK    :|_| |_| |_| |_| |_| |_| |_| |_| |_|
+     __:______ ___ ___ ___ ___ ___ ___ ___ ___
+JOY1 __|______|___|___|___|___|___|___|___|___
+     __:______ ___ ___ ___ ___ ___ ___ ___ ___
+JOY2 __|______|___|___|___|___|___|___|___|___
+     __:______ ___ ___ ___ ___ ___ ___ ___ ___
+JOY3 __|______|___|___|___|___|___|___|___|___
+     __:______ ___ ___ ___ ___ ___ ___ ___ ___
+JOY4 __|______|___|___|___|___|___|___|___|___
+         1st   2nd 3rd 4th 5th 6th 7th 8th ...
+```
+Unlike SNES (and its predecessor NES), VIA doesn't invert joypad signals
+internally. This means that any read and write data will be inverted compared
+to SNES in software's point of view.
+
+### Standard SNES Joypad Bits
+```
+1st         B Button        (0=Pressed, 1=Released)
+2nd         Y Button        (0=Pressed, 1=Released)
+3rd         Select Button   (0=Pressed, 1=Released)
+4th         Start Button    (0=Pressed, 1=Released)
+5th         D-Pad Up        (0=Pressed, 1=Released)
+6th         D-Pad Down      (0=Pressed, 1=Released)
+7th         D-Pad Left      (0=Pressed, 1=Released)
+8th         D-Pad Right     (0=Pressed, 1=Released)
+9th         A Button        (0=Pressed, 1=Released)
+10th        X Button        (0=Pressed, 1=Released)
+11th        L Button        (0=Pressed, 1=Released)
+12th        R Button        (0=Pressed, 1=Released)
+13th        ID Bit 3        (usually 1)
+14th        ID Bit 2        (usually 1)
+15th        ID Bit 1        (usually 1)
+16th        ID Bit 0        (usually 1)
+17th and up Padding         (always 0) (or 1 when port is not connected)
+```
+
+### Other SNES Controllers/Devices
+It's possible to connect any other devices aside of SNES controllers to the
+port as long as they are electrically compatible and there's a software to read
+them. Although note that as seen in VIA connections section, IO6 and IO7 (Pin 6
+on each of the connectors) are not connected to anything. Which means it's
+impossible to interface devices that use those lines. For documentation of
+devices that connect to SNES controller ports during its lifetime, see SNES
+Controllers section in Fullsnes:  
+http://problemkaputt.de/fullsnes.htm  
+http://problemkaputt.de/fullsnes.txt
+
+
+## X16 Serial Bus Interface (Commodore Disk Drives/Printers)
+
+X16 has one connector for Commodore Serial IEEE-488 Bus (usually referred to as
+IEC Bus). Which is a cheaper serial version of IEEE-488 interface used
+throughout Commodore's 8-bit computers since VIC-20 for disk drives and
+printers. The interface is a 3-wire serial containing ATN line which works
+similarly to CS line in SPI but is also used to send special commands to
+select which device to send/receive a data after this or even switch roles
+around. Allowing many devices to be on a same bus.
+
+(under construction)
+
+
+# X16 I2C Bus
+
+Aside of the main address/data bus, X16 also has an I2C bus which is a 2-wire
+serial bus for communicating with some more low-cost and low pin count devices
+that don't require fast data transfers.
+
+### Internal I2C Devices
+Device 42h: [X16 System Management Controller](#x16-system-management-controller)  
+Device 6Fh: [MCP7940N Real-Time Clock](#mcp7940n-real-time-clock)  
+
+## X16 I2C Bus Access
+
+Despite having only one clock and one data line, the bus is capable of holding
+many devices. Each device has a unique device address which the host has to
+address them before reading/writing a data. When other devices detect that the
+address isn't theirs, they will just ignore the whole data after until a stop
+bit is sent or the clock line goes inactive. This allows the host to be able
+to talk to only one device at a time.
+
+The host always drive the clock line (SCL), but it's possible that the device
+will keep pulling the clock line low to signal that it's still busy. The
+maximum frequency is usually 400kHz. Below timing diagram shows how to
+read/write a data for this bus:
+```
+    Start        Device Address       R/W' Ack     Data Bytes      Ack   Stop
+    <----><--------------------------><--><--><------------------><----><---->
+    _____   _   _   _   _   _   _   _   _   _   _   _       _   _   _   ______
+SCL      |_| |_| |_| |_| |_| |_| |_| |_| |_| |_| |_| |/ /|_| |_| |_| |_|
+    __     ___ ___ ___ ___ ___ ___ ___ ___     ___ ___/ /_ ___ ___         ___
+SDA   |___|___|___|___|___|___|___|___|___|___|___|___/ /_|___|___|_______|
+     START  7   6   5   4   3   2   1   0  ACK  7   6 ...   1   0  ACK  STOP
+```
+Data transfer starts with pulling the data line low to signal the start
+condition to every devices in the bus. Then begin writing a data every
+falling edge of the clock (the device will read it at the rising edge). After
+each byte transferred, the device will send acknowledge bit back. Read this at
+the rising edge of the clock to determine if addressed devices exist and
+successfully received a byte. After all bytes are transferred, clock one more
+bit and then release the clock line and data line after to signal the stop
+condition. For read process (R/W' bit is 1), the roles on the data line are
+reversed after the first Ack: the device puts a data and the host sends
+acknowledge bit instead. Sometimes a read data is infinite in length and
+requires a no acknowledge (NoAck) bit to stop the device from sending more.
+
+## X16 System Management Controller
+Device 42h is a system management controller. This device monitors power usages
+and communicates with the power supply, front panel buttons and LEDs. It also
+accepts I2C commands for a software control of those from the main system. The
+chip used for this is an ATtiny84A microcontroller with a custom Arduino-based
+firmware.
+
+Since the microcontroller uses flash memory to store a firmware, it's possible
+to program this system management controller externally. However the details
+about this will not be covered in this document since it's considered outside
+the X16 software development scope and the microcontroller itself is quite a
+complex piece of hardware.
+
+### Transfer Sequences
+```
+Write Command   Start 84h Ack <CMD> Ack <VAL> Ack Stop
+Read Command    Start 84h Ack <CMD> Ack Start 85h <VAL> Ack ... NoAck Stop
+```
+
+### Commands
+```
+CMD     VAL     Description
+01h     00h     Power Off
+01h     01h     Hard Reset
+02h     00h     Soft Reset
+03h     00h     NMI
+05h     nnh     Activity LED Brightness (0-255)
+07h             Read Keybord Data
+08h     nnh     Read/Write Dummy Register
+18h             Read Keyboard Status
+19h     nnh     Write Keybord Data
+1Ah     nnh nnh Write Keybord Data
+21h             Read Mouse Data
+```
+
+## X16 SMC PS/2 Interface (Keyboard/Mouse)
 
 X16 uses PS/2 connectors for each keyboard and mouse input. It is a two-wire
 serial interface similar to I2C, but the transfer protocol is incompatible,
 slower and has +5V logic. The connector itself doesn't differentiate between
 keyboard and mouse and in theory could be plugged to any of both. However, the
-keyboard and mouse use different command sets and X16 (and PCs)'s device
-drivers are hard-coded to handle each one on its own labelled port.
+keyboard and mouse use different command sets and X16 (and PC)'s device drivers
+are hard-coded to handle each one on its own labelled port.
 
-For this interface, the clock signal is always driven by a device. Since the
-clock line from both ports are connected to regular I/O ports of the VIA, there
-is no way to interrupt the CPU to read an incoming serial data from devices.
-However, the protocol itself allows the host to pull the clock line low to
-signal devices that the host is busy. This will stop any active transfers from
-them, inhibit them to not send any data and wait until the clock line is
-released. So, a typical keyboard/mouse reading routine in X16 usually consists
-of releasing a clock line (by setting PA1/PB1 direction to read), reading all
-transferred data and then pulling a clock line low again after finishing to
-prevent any lost scan codes when the system is not reading it.
-
-### PS/2 Bus Access (Read)
-```
-     Start            Data Byte           Parity Stop
-     <----><------------------------------><--><----->
-     ___   _   _   _   _   _   _   _   _   _   _   ___
-CLK     |_| |_| |_| |_| |_| |_| |_| |_| |_| |_| |_| 
-     __     ___ ___ ___ ___ ___ ___ ___ ___ ___ ______
-DATA   |___|___|___|___|___|___|___|___|___|___|
-      START  0   1   2   3   4   5   6   7  ODD STOP
-```
-After all lines are released (make sure to release the data line first or both
-at the same time to avoid accidentally signalling write mode), wait a bit until
-the device start pulling the clock line low, then begin reading the data every
-falling edge of the clock until stop bit is read. Repeat the reading process
-again for next bytes. If the device never pulls the clock line low from having
-no more data to send, simply time out the wait loop and pull the clock line low
-to end the process.
-
-### PS/2 Bus Access (Write)
-```
-      Start            Data Byte         Parity Stop Ack
-     <------><------------------------------><-->--<------>
-     _     _   _   _   _   _   _   _   _   _   _   _   ____
-CLK   |___| |_| |_| |_| |_| |_| |_| |_| |_| |_| |_| |_|
-     ____     ___ ___ ___ ___ ___ ___ ___ ___ ___ _     ___
-DATA     |___|___|___|___|___|___|___|___|___|___| |___|
-        START  0   1   2   3   4   5   6   7  ODD S ACK
-```
-To write to the device, pull the clock line low to stop it from sending a data,
-then send the start bit during this state to indicate write mode. Release the
-clock line without changing the data line and wait a bit until the device start
-pulling the clock line low and read this start bit. Then begin writing a data
-every falling edge of the clock (the device will read it at the rising edge).
-After the stop bit is written, release the data line for the device to send
-acknowledge signal then read this at the falling edge of the clock. After this,
-the device will usually send back a response data for the host to read.
-
-### Parity Bit
-The PS/2 protocol contains a simple error checking in a form of parity bit. The
-number of logic 1s in the data bit and parity bit must always added up to an
-odd number. The parity bit can simply calculated by XOR-ing every data bits
-then invert the result: `P = NOT(D.Bit(0) XOR D.Bit(1) XOR ... XOR D.Bit(7))`
+The SMC handles this slow communication and receives any new data from both
+devices to its own buffer. This allows a new PS/2 data to be read at any time.
+To read this data, send an appropriate read command for each device and read
+until 00h is received.
 
 ### Device Self-test (BAT)
-After power-on or a reset by the host. The device will initialize to default
+After a power-on or a reset by the host. The device will initialize to default
 settings and perform a self-test referred to as Basic Assurance Test (BAT). It
 will ignore any write commands until this process is finished. After finishing,
 it will either send AAh for success or FCh for error.
@@ -1427,163 +1662,68 @@ E7h         Set 2:1 Scaling
 E6h         Set 1:1 Scaling
 ```
 
-## X16 Joypad Interface (SNES Controllers)
 
-X16 has 2 SNES-compatible joypad connectors for up to 4 connected joypads at
-the same time. However, being connected to VIA, there is no auto-read feature
-or even legacy auto-shift on read feature like in SNES. Instead, all read/write
-operations have to be done manually in a bit-banging fashion.
+### PS/2 Internals
 
-### X16 Joypad Access
-The below timing diagram shows how to read a data from joypads that use typical
-Parallel-Load Shift Registers. STB is set low in order to load all parallel
-inputs into the shift register. Any CLK signals during STB low will be ignored.
-Once STB is set high, any rising edge of CLK signal will shift the register out
-by one bit. If nothing is connected to a port, the data at that port will
-be pulled up and always read 1.
+<small>This sub-section onwards is no longer accurate nor relevant for software
+programming but is kept as an artifact of 3rd and older prototype boards having
+to directly interface PS/2 through VIA pins.</small>
+
+For this interface, the clock signal is always driven by a device. Since the
+clock line from both ports are connected to regular I/O ports of the VIA, there
+is no way to interrupt the CPU to read an incoming serial data from devices.
+However, the protocol itself allows the host to pull the clock line low to
+signal devices that the host is busy. This will stop any active transfers from
+them, inhibit them to not send any data and wait until the clock line is
+released. So, a typical keyboard/mouse reading routine in X16 usually consists
+of releasing a clock line (by setting PA1/PB1 direction to read), reading all
+transferred data and then pulling a clock line low again after finishing to
+prevent any lost scan codes when the system is not reading it.
+
+### PS/2 Bus Access (Read)
 ```
-     __       ________________________________
-STB    |_____|
-     ___   _   _   _   _   _   _   _   _   ___
-CLK    :|_| |_| |_| |_| |_| |_| |_| |_| |_|
-     __:______ ___ ___ ___ ___ ___ ___ ___ ___
-JOY1 __|______|___|___|___|___|___|___|___|___
-     __:______ ___ ___ ___ ___ ___ ___ ___ ___
-JOY2 __|______|___|___|___|___|___|___|___|___
-     __:______ ___ ___ ___ ___ ___ ___ ___ ___
-JOY3 __|______|___|___|___|___|___|___|___|___
-     __:______ ___ ___ ___ ___ ___ ___ ___ ___
-JOY4 __|______|___|___|___|___|___|___|___|___
-         1st   2nd 3rd 4th 5th 6th 7th 8th ...
+     Start            Data Byte           Parity Stop
+     <----><------------------------------><--><----->
+     ___   _   _   _   _   _   _   _   _   _   _   ___
+CLK     |_| |_| |_| |_| |_| |_| |_| |_| |_| |_| |_| 
+     __     ___ ___ ___ ___ ___ ___ ___ ___ ___ ______
+DATA   |___|___|___|___|___|___|___|___|___|___|
+      START  0   1   2   3   4   5   6   7  ODD STOP
 ```
-Unlike SNES (and its predecessor NES), VIA doesn't invert joypad signals
-internally. This means that any read and write data will be inverted compared
-to SNES in software's point of view.
+After all lines are released (make sure to release the data line first or both
+at the same time to avoid accidentally signalling write mode), wait a bit until
+the device start pulling the clock line low, then begin reading the data every
+falling edge of the clock until stop bit is read. Repeat the reading process
+again for next bytes. If the device never pulls the clock line low from having
+no more data to send, simply time out the wait loop and pull the clock line low
+to end the process.
 
-### Standard SNES Joypad Bits
+### PS/2 Bus Access (Write)
 ```
-1st         B Button        (0=Pressed, 1=Released)
-2nd         Y Button        (0=Pressed, 1=Released)
-3rd         Select Button   (0=Pressed, 1=Released)
-4th         Start Button    (0=Pressed, 1=Released)
-5th         D-Pad Up        (0=Pressed, 1=Released)
-6th         D-Pad Down      (0=Pressed, 1=Released)
-7th         D-Pad Left      (0=Pressed, 1=Released)
-8th         D-Pad Right     (0=Pressed, 1=Released)
-9th         A Button        (0=Pressed, 1=Released)
-10th        X Button        (0=Pressed, 1=Released)
-11th        L Button        (0=Pressed, 1=Released)
-12th        R Button        (0=Pressed, 1=Released)
-13th        ID Bit 3        (usually 1)
-14th        ID Bit 2        (usually 1)
-15th        ID Bit 1        (usually 1)
-16th        ID Bit 0        (usually 1)
-17th and up Padding         (always 0) (or 1 when port is not connected)
+      Start            Data Byte         Parity Stop Ack
+     <------><------------------------------><-->--<------>
+     _     _   _   _   _   _   _   _   _   _   _   _   ____
+CLK   |___| |_| |_| |_| |_| |_| |_| |_| |_| |_| |_| |_|
+     ____     ___ ___ ___ ___ ___ ___ ___ ___ ___ _     ___
+DATA     |___|___|___|___|___|___|___|___|___|___| |___|
+        START  0   1   2   3   4   5   6   7  ODD S ACK
 ```
+To write to the device, pull the clock line low to stop it from sending a data,
+then send the start bit during this state to indicate write mode. Release the
+clock line without changing the data line and wait a bit until the device start
+pulling the clock line low and read this start bit. Then begin writing a data
+every falling edge of the clock (the device will read it at the rising edge).
+After the stop bit is written, release the data line for the device to send
+acknowledge signal then read this at the falling edge of the clock. After this,
+the device will usually send back a response data for the host to read.
 
-### Other SNES Controllers/Devices
-It's possible to connect any other devices aside of SNES controllers to the
-port as long as they are electrically compatible and there's a software to read
-them. Although note that as seen in VIA connections section, IO6 and IO7 (Pin 6
-on each of the connectors) are not connected to anything. Which means it's
-impossible to interface devices that use those lines. For documentation of
-devices that connect to SNES controller ports during its lifetime, see SNES
-Controllers section in Fullsnes:  
-http://problemkaputt.de/fullsnes.htm  
-http://problemkaputt.de/fullsnes.txt
-
-
-## X16 Serial Bus Interface (Commodore Disk Drives/Printers)
-
-X16 has one connector for Commodore Serial IEEE-488 Bus (usually referred to as
-IEC Bus). Which is a cheaper serial version of IEEE-488 interface used
-throughout Commodore's 8-bit computers since VIC-20 for disk drives and
-printers. The interface is a 3-wire serial containing ATN line which works
-similarly to CS line in SPI but is also used to send special commands to
-select which device to send/receive a data after this or even switch roles
-around. Allowing many devices to be on a same bus.
-
-(under construction)
+### Parity Bit
+The PS/2 protocol contains a simple error checking in a form of parity bit. The
+number of logic 1s in the data bit and parity bit must always added up to an
+odd number. The parity bit can simply calculated by XOR-ing every data bits
+then invert the result: `P = NOT(D.Bit(0) XOR D.Bit(1) XOR ... XOR D.Bit(7))`
 
 
-# X16 I2C Bus
-
-Aside of the main address/data bus, X16 also has an I2C bus which is a 2-wire
-serial bus for communicating with some more low-cost and low pin count devices
-that don't require fast data transfers.
-
-### Internal I2C Devices
-Device 42h: [X16 System Management Controller](#x16-system-management-controller)  
-Device 6Fh: [MCP7940N Real-Time Clock](#mcp7940n-real-time-clock)  
-
-## X16 I2C Bus Access
-
-Despite having only one clock and one data line, the bus is capable of holding
-many devices. Each device has a unique device address which the host has to
-address them before reading/writing a data. When other devices detect that the
-address isn't theirs, they will just ignore the whole data after until a stop
-bit is sent or the clock line goes inactive. This allows the host to be able
-to talk to only one device at a time.
-
-The host always drive the clock line (SCL), but it's possible that the device
-will keep pulling the clock line low to signal that it's still busy. The
-maximum frequency is usually 400kHz. Below timing diagram shows how to
-read/write a data for this bus:
-```
-    Start        Device Address       R/W' Ack     Data Bytes      Ack   Stop
-    <----><--------------------------><--><--><------------------><----><---->
-    _____   _   _   _   _   _   _   _   _   _   _   _       _   _   _   ______
-SCL      |_| |_| |_| |_| |_| |_| |_| |_| |_| |_| |_| |/ /|_| |_| |_| |_|
-    __     ___ ___ ___ ___ ___ ___ ___ ___     ___ ___/ /_ ___ ___         ___
-SDA   |___|___|___|___|___|___|___|___|___|___|___|___/ /_|___|___|_______|
-     START  7   6   5   4   3   2   1   0  ACK  7   6 ...   1   0  ACK  STOP
-```
-Data transfer starts with pulling the data line low to signal the start
-condition to every devices in the bus. Then begin writing a data every
-falling edge of the clock (the device will read it at the rising edge). After
-each byte transferred, the device will send acknowledge bit back. Read this at
-the rising edge of the clock to determine if addressed devices exist and
-successfully received a byte. After all bytes are transferred, clock one more
-bit and then release the clock line and data line after to signal the stop
-condition. For read process (R/W' bit is 1), the roles on the data line are
-reversed after the first Ack: the device puts a data and the host sends
-acknowledge bit instead. Sometimes a read data is infinite in length and
-requires a no acknowledge (NoAck) bit to stop the device from sending more.
-
-It is also possible to turn X16 into an I2C device since the VIA allows its CB2
-pin, which is connected to the clock line, to be an input that generates an
-interrupt on both signal edges. When an (external) host drives the SCK line, it
-will generate NMI on the X16 to begin and resume the communication process any
-time.
-
-## X16 System Management Controller
-Device 42h is a system management controller. This device monitors power usages
-and communicates with the power supply, front panel buttons and LEDs. It also
-accepts I2C commands for a software control of those from the main system. The
-chip used for this is an ATtiny84A microcontroller with a custom Arduino-based
-firmware.
-
-Since the microcontroller uses flash memory to store a firmware, it's possible
-to program this system management controller externally. However the details
-about this will not be covered in this document since it's considered outside
-the X16 software development scope and the microcontroller itself is quite a
-complex piece of hardware.
-
-### Transfer Sequences
-```
-Write Command   Start 84h Ack <CMD> Ack <VAL> Ack Stop
-```
-
-### Commands
-```
-CMD     VAL     Description
-01h     00h     Power Off
-01h     01h     Hard Reset
-02h     00h     Soft Reset
-03h     00h     NMI
-04h     nnh     Power LED Brightness (0-255)
-05h     nnh     Activity LED Brightness (0-255)
-```
 
 ## MCP7940N Real-Time Clock
 Device 6Fh is a real-time clock chip that keeps the system time running across
@@ -1685,7 +1825,7 @@ Bit
 ```
 Bit
 7-6     Not Used
-5       Leap Year (1=Leap Year) (Read-Only)
+5       Leap Year (1=Leap Year) (Read-only)
 4       BCD Tens Digit Month (0-1)
 3-0     BCD Ones Digit Month (0-9)
 ```
@@ -1847,13 +1987,14 @@ RTC Crystal             32.76800kHz
 ### VERA Timings
 ```
 VERA Oscillator         25.00000MHz
-Progressive Dot Clock   25.00000MHz (25MHz/1)
-Interlaced Dot Clock    12.50000MHz (25MHz/2)
+480p Dot Clock          25.00000MHz (25MHz/1)
+240p/480i Dot Clock     12.50000MHz (25MHz/2)
 L/C Color Clock         3.579545MHz (25MHz*150137/2^20)
-Progressive Line Rate   31.25000kHz (25MHz/800)
-Interlaced Line Rate    15.74307kHz (25MHz/(794*2))
-Progressive Frame Rate  59.523810Hz (25MHz/(525*800))
-Interlaced Frame Rate   29.986805Hz (25MHz/(525*794*2))
+480p Line Rate          31.25000kHz (25MHz/800)
+240p/480i Line Rate     15.74307kHz (25MHz/(794*2))
+480p Frame Rate         59.523810Hz (25MHz/(525*800))
+480i Frame Rate         29.986805Hz (25MHz/(525*794*2))
+240p Frame Rate         59.859593Hz (25MHz/(263*794*2))
 PSG+FIFO Sample Rate    48.82813kHz (25MHz/512)
 SPI Fast Clock          12.50000MHz (25MHz/2)
 SPI Slow Clock          390.6250kHz (25MHz/64)
@@ -1918,6 +2059,9 @@ H=793                   Last dot in the line
 ### Chips
 [X16 Pinouts SMC Chip](#x16-pinouts-smc-chip)  
 [X16 Pinouts VERA Chips](#x16-pinouts-vera-chips)  
+[X16 Pinouts 65C02 CPU](#x16-pinouts-65c02-cpu)  
+[X16 Pinouts VIA Chip](#x16-pinouts-via-chip)  
+[X16 Pinouts YM2151 Chip](#x16-pinouts-ym2151-chip)  
 
 ## X16 Power Supply
 
@@ -1969,6 +2113,8 @@ H=793                   Last dot in the line
 6   I/O bit 6 (NC)  I/O bit 7 (NC)  | VCC CK2 STB IN2 | IN4 IO7 GND | 2
 7   Ground          Ground          |_________________|____________/
 ```
+NOTE: In Developer Board (and probably older prototype boards), IN3 and IN4 are
+not connected to the connector port but are available in separate pin headers.
 
 ## X16 Audio/Video Connector Pinouts
 
@@ -1980,8 +2126,8 @@ H=793                   Last dot in the line
 4   ID2/RES 9   Key/+5V 14  VSync        | 15  14  13  12  11 |
 5   Ground  10  Ground  15  ID3/SCL       --------------------
 ```
-NOTE: In interlaced RGB mode, only composite sync signal is output in pin 13;
-pin 14 will always output ground.
+NOTE: In display modes with a composite sync, the sync signal is only output in
+pin 13; pin 14 will always output ground.
 
 ### Composite Out (Yellow RCA Connector)
 ```
@@ -2026,63 +2172,122 @@ WP  Write protect (slot only)                   '------------------'
 
 ## X16 Expansion Port Pinouts
 X16p has 4 identical expansion ports located at where ATX expansion slots would
-be. Physically, they are 60-pin PCB edge connectors with a 2.54mm pitch (?).
+be. Physically, they are 60-pin PCB edge connectors with a 2.54mm pitch.
 The following pinouts are viewed from the component side.
+
+### X16p "Developer Board" Expansion Port Pinouts
 ```
-     ^^^ To I/O side ^^^
-    -12V - 1     2 - +12V
-     GND - 3     4 - +5V
-   +3.3V - 5     6 - GND
-     GND - 7     8 - /IO3
- AUDIO_L - 9    10 - /IO4
-     GND - 11   12 - /IO5
- AUDIO_R - 13   14 - /IO6
-     GND - 15   16 - /IO7
-     /VP - 17   18 - /RES
-     RDY - 19   20 - GND
-    /IRQ - 21   22 - PHI2
-      BE - 23   24 - /ML
-    /NMI - 25   26 - GND
-    SYNC - 27   28 - R/W
-     GND - 29   30 - D0
-      A0 - 31   32 - D1
-      A1 - 33   34 - D2
-      A2 - 35   36 - D3
-      A3 - 37   38 - D4
-      A4 - 39   40 - D5
-      A5 - 41   42 - D6
-      A6 - 43   44 - D7
-      A7 - 45   46 - A15
-      A8 - 47   48 - A14
-      A9 - 49   50 - A13
-     A10 - 51   52 - A12
-     A11 - 53   54 - GND
-     GND - 55   56 - +3.3V
-     +5V - 57   58 - GND
-    +12V - 59   60 - -12V
+      ^^^ To I/O side ^^^
+             -------
+    -12V -- |1    31| -- +12V
+     GND -- |2    32| -- +5V
+ AUDIO_L <- |3    33| -- GND
+ AUDIO_R <- |4    34| <- ROMB7
+    /IO3 -> |5    35| <- ROMB0
+    /IO4 -> |6    36| <- ROMB1
+    /IO7 -> |7    37| <- ROMB6
+    /IO5 -> |8    38| <- ROMB2
+    /IO6 -> |9    39| <- ROMB5
+    /RES -> |10   40| <- ROMB3
+     RDY <> |11   41| <- ROMB4
+    /IRQ <- |12   42| <- PHI2
+      BE <- |13   43| <> R/W
+    /NMI <- |14   44| <- /ML
+    SYNC -> |15   45| <> D0
+      A0 <> |16   46| <> D1
+      A1 <> |17   47| <> D2
+      A2 <> |18   48| <> D3
+      A3 <> |19   49| <> D4
+      A4 <> |20   50| <> D5
+      A5 <> |21   51| <> D6
+      A6 <> |22   52| <> D7
+      A7 <> |23   53| <> A15
+      A8 <> |24   54| <> A14
+      A9 <> |25   55| <> A13
+     A10 <> |26   56| <> A12
+     A11 <> |27   57| <> SDA
+     GND -- |28   58| <> SCL
+     +5V -- |29   59| -- GND
+    +12V -- |30   60| -- -12V
+             -------
+```
+
+### X16p "Prototype #3" Expansion Port Pinouts
+```
+      ^^^ To I/O side ^^^
+             -------
+    -12V -- |1    31| -- +12V
+     GND -- |2    32| -- +5V
+   +3.3V -- |3    33| -- GND
+     GND -- |4    34| <- /IO4
+ AUDIO_L <- |5    35| <- /IO5
+     GND -- |6    36| <- /IO6
+ AUDIO_R <- |7    37| <- /IO7
+     GND -- |8    38| <- /IO8
+     /VP -> |9    39| <- /RES
+     RDY <> |10   40| -- GND
+    /IRQ <- |11   41| <- PHI2
+      BE <- |12   42| <- /ML
+    /NMI <- |13   43| -- GND
+    SYNC -> |14   44| <> R/W
+     GND -- |15   45| <> D0
+      A0 <> |16   46| <> D1
+      A1 <> |17   47| <> D2
+      A2 <> |18   48| <> D3
+      A3 <> |19   49| <> D4
+      A4 <> |20   50| <> D5
+      A5 <> |21   51| <> D6
+      A6 <> |22   52| <> D7
+      A7 <> |23   53| <> A15
+      A8 <> |24   54| <> A14
+      A9 <> |25   55| <> A13
+     A10 <> |26   56| <> A12
+     A11 <> |27   57| -- GND
+     GND -- |28   58| -- +3.3V
+     +5V -- |29   59| -- GND
+    +12V -- |30   60| -- -12V
+             -------
 ```
 
 ## X16 Pinouts VERA Module
 Viewed from component side, the connector is a 2x12 pin header with a 2.54mm
 pitch.
 ```
-     VCC - 1     2 - GND
-      D7 - 3     4 - D6
-      D5 - 5     6 - D4
-      D3 - 7     8 - D2
-      D1 - 9    10 - D0
-     /CS - 11   12 - /RES
-     /WR - 13   14 - /IRQ
-      A4 - 15   16 - /RD
-      A2 - 17   18 - A3
-      A0 - 19   20 - A1
-     GND - 21   22 - GND
- AUDIO_L - 23   24 - AUDIO_R
+             -------
+     VCC -- |1     2| -- GND
+      D7 <> |3     4| <> D6
+      D5 <> |5     6| <> D4
+      D3 <> |7     8| <> D2
+      D1 <> |9    10| <> D0
+     /CS -> |11   12| <- /RES
+     /WR -> |13   14| -> /IRQ
+      A4 -> |15   16| <- /RD
+      A2 -> |17   18| <- A3
+      A0 -> |19   20| <- A1
+     GND -- |21   22| -- GND
+ AUDIO_L <- |23   24| -> AUDIO_R
+             -------
 ```
 
 ## X16 Pinouts SMC Chip
+Developer Board
 ```
-              .---_---. 
+              .---_---.
+      I2C_SDA |1    20| /RES
+         /IRQ |2  T 19| /NMI
+      I2C_SCL |3  I 18| KB_CLK
+       KB_DAT |4  N 17| PWR_OK
+          VCC |5  Y 16| AGND
+          GND |6  8 15| AVCC
+    RESET_BTN |7  6 14| PWR_BTN
+    MOUSE_DAT |8  1 13| /PWR_ON
+    MOUSE_CLK |9    12| HDD_LED
+   /SMC_RESET |10   11| NMI_BTN
+              '-------'
+```
+Prototype #3
+```
+              .---_---.
       I2C_SDA |1    20| /RES
       HDD_LED |2  T 19| /NMI
       I2C_SCL |3  I 18| RESET_BTN
@@ -2093,7 +2298,7 @@ pitch.
 MOUSE_DAT (?) |8  1 13| /PWR_ON
 MOUSE_CLK (?) |9    12| PWR_OK
    /SMC_RESET |10   11| (?)
-              '-------' 
+              '-------'
 ```
 
 ## X16 Pinouts VERA Chips
@@ -2112,7 +2317,7 @@ U9  5-pin   AP3417CKTR-G1               ; 1.2V switching regulator
 U10 5-pin   MIC5504-3.3YM5              ; 3.3V linear regulator
 U11 8-pin   THS7314D                    ; SDTV video amplifier
 X1  4-pin   SG5032CAN_25.000000M-TJGA3  ; Oscillator 25.0MHz
-JP1 2-pin   Flash enable jumper
+JP1 2-pin   Configuration flash enable jumper
 J1  24-pin  Module connector
 J2  8-pin   Programmer connector
 J3  11-pin  Memory card slot
@@ -2138,11 +2343,89 @@ J9  4-pin   S-Video connector
 EP  GND
 ```
 
+## X16 Pinouts 65C02 CPU
+
+```
+            .---_---.
+        /VP |1    40| /RES
+        RDY |2    39| PHI2O
+      PHI1O |3    38| /SO
+       /IRQ |4    37| PHI2
+        /ML |5    36| BE
+       /NMI |6    35| NC
+       SYNC |7    34| R/W
+        VCC |8    33| D0
+         A0 |9    32| D1
+         A1 |10   31| D2
+         A2 |11   30| D3
+         A3 |12   29| D4
+         A4 |13   28| D5
+         A5 |14   27| D6
+         A6 |15   26| D7
+         A7 |16   25| A15
+         A8 |17   24| A14
+         A9 |18   23| A13
+        A10 |19   22| A12
+        A11 |20   21| GND
+            '-------'
+```
+
+## X16 Pinouts VIA Chip
+
+```
+                .---_---.
+            GND |1    40| CA1
+  (I2C_SDA) PA0 |2    39| CA2
+  (I2C_SCL) PA1 |3    38| RS0
+  (JOY_STB) PA2 |4    37| RS1
+  (JOY_CLK) PA3 |5    36| RS2
+  (JOY_IN4) PA4 |6    35| RS3
+  (JOY_IN3) PA5 |7    34| /RES
+  (JOY_IN2) PA6 |8    33| D0
+  (JOY_IN1) PA7 |9    32| D1
+            PB0 |10   31| D2
+            PB1 |11   30| D3
+            PB2 |12   29| D4
+  (SER_ATN) PB3 |13   28| D5
+ (SER_CLKO) PB4 |14   27| D6
+ (SER_DATO) PB5 |15   26| D7
+ (SER_CLKI) PB6 |16   25| PHI2
+ (SER_DATI) PB7 |17   24| CS1
+  (SER_SRQ) CB1 |18   23| /CS2
+            CB2 |19   22| R/W
+            VCC |20   21| /IRQ
+                '-------'
+```
+
+## X16 Pinouts YM2151 Chip
+
+```
+            .---_---.
+        GND |1    24| PHIM
+       /IRQ |2    23| PHI1
+        /IC |3    22| VCC
+         A0 |4    21| SO
+        /WR |5    20| SH1
+        /RD |6    19| SH2
+        /CS |7    18| D7
+        CT1 |8    17| D6
+        CT2 |9    16| D5
+         D0 |10   15| D4
+        GND |11   14| D3
+         D1 |12   13| D2
+            '-------'
+```
+
+
+# X16 Hardware History
+
+(under construction)
+
+
 # VIA Versatile Interface Adapter
 
-I/O port addresses below are 4-bit RSx address line values. For X16, which uses
-two VIAs, these addresses are mapped directly to 9F0xh for the first one and
-9F1xh for the second one.
+The following addresses are X16 I/O address, which the lowest 4 bits are mapped
+directly to RSx inputs.
 
 [VIA Peripheral Data Ports](#via-peripheral-data-ports)  
 [VIA Data Transfer Controls](#via-data-transfer-controls)  
@@ -2153,9 +2436,9 @@ two VIAs, these addresses are mapped directly to 9F0xh for the first one and
 
 ## VIA Peripheral Data Ports
 
-### 0h - PRB - Port B Input/Output (R/W)
-### 1h - PRA - Port A Input/Output (R/W)
-### Fh - PRA2 - Port A Input/Output Without Handshaking (R/W)
+### 9F00h - PRB - Port B Input/Output (R/W)
+### 9F01h - PRA - Port A Input/Output (R/W)
+### 9F0Fh - PRA2 - Port A Input/Output Without Handshaking (R/W)
 Write to port output or read from port input. A bit value of 0 means
 physical logic 0 input/output and a bit value of 1 means physical logic 1
 input/output. This register is internally separated to one for input (IRx) and
@@ -2180,8 +2463,8 @@ bit n = 1               set to bit n's value        bit n
 ```
 Latching is controlled by ACR bit 0-1's value (for Port A and B respectively).
 
-### 2h - DDRB - Port B Data Direction (R/W)
-### 3h - DDRA - Port A Data Direction (R/W)
+### 9F02h - DDRB - Port B Data Direction (R/W)
+### 9F03h - DDRA - Port A Data Direction (R/W)
 Set the data direction for each port. For each bit n of DDRx register: a value
 of 0 (input) means Pxn pin is released to high Z state, allowing other devices
 to drive it; a value of 1 (output) means Pxn pin is driven to the current
@@ -2193,7 +2476,7 @@ register which can be changed even when the direction was set to input.
 
 ## VIA Data Transfer Controls
 
-### Bh - ACR - Auxiliary Control Register (R/W)
+### 9F0Bh - ACR - Auxiliary Control Register (R/W)
 ```
 Bit
 7       T1 PB7 Output (0=Disable, 1=Enable)
@@ -2217,7 +2500,7 @@ If T1 PB7 Output is enabled, PB7 pin's output is overridden to always output
 a level according to Timer 1's operation. Although DDRB bit 7 setting can
 still make PB7 pin to be an input.
 
-### Ch - PCR - Peripheral Control Register (R/W)
+### 9F0Ch - PCR - Peripheral Control Register (R/W)
 ```
 Bit
 7-5     CB2 Control
@@ -2292,14 +2575,14 @@ After this, it will either not generate any more interrupts or reload the
 counter with a latched value depending on the modes described below. Timer 1
 can also be configured to toggle output on PB7 pin with ACR bit 7 setting.
 
-### 4h/5h - T1L/T1H - T1 Counter (R/W)
+### 9F04h/9F05h - T1L/T1H - T1 Counter (R/W)
 Reads will return the current counter value and clear IFR bit 6 if the lower 8
 bits are read. Writes will set the latch (reload) value. If the upper 8 bits
 are written, also reload the counter with a new value, start the counting and
 clear IFR bit 6. When restarting the counter with a new reload value, it's
 recommended to write to 4h first then write to 5h.
 
-### 6h/7h - T1LL/T1LH - T1 Latch (R/W)
+### 9F06h/9F07h - T1LL/T1LH - T1 Latch (R/W)
 Reads will return the latch (reload) value but doesn't clear IFR bit 6. Writes
 will set the latch value. If the upper 8 bits are written, clear IFR bit 6 only
 (no counter reload like in T1H).
@@ -2341,7 +2624,7 @@ input. When the counter reaches 0, IFR bit 5 is set and generate an interrupt
 if it's enabled. Timer 2 is one-shot mode only and works the same as Timer 1
 except the counter reloads to FFFFh instead and there's no PB7 output.
 
-### 8h/9h - T2L/T2H - T2 Counter (R/W)
+### 9F08h/9F09h - T2L/T2H - T2 Counter (R/W)
 Reads will return the current counter value and clear IFR bit 5 if the lower 8
 bits are read. Writes will set the latch (reload) value. If the upper 8 bits
 are written, also reload the counter with a new value, start the counting and
@@ -2362,7 +2645,7 @@ Counter     _______|__N__|_N-1_|_N-2_/ / |__1__|__0__|FFFF_
 
 ## VIA Shift Register
 
-### Ah - SR  - Shift Register (R/W)
+### 9F0Ah - SR  - Shift Register (R/W)
 The shift register contains an 8-bit buffer which is used to perform
 bidirectional serial transfers on CB2 pin with automatic clocking from either
 CB1 pin input or internal counters, depending on the current ACR setting.
@@ -2513,7 +2796,7 @@ Same as Shift Out At T2 Rate but shifting is driven by CB1 input clock.
 
 ## VIA Interrupts
 
-### Dh - IFR - Interrupt Flags Register (R/W)
+### 9F0Dh - IFR - Interrupt Flags Register (R/W)
 ```
 Bit
 7       Interrupt Request; 1 if there's any set bits in IER AND IFR
@@ -2528,16 +2811,17 @@ Bit
 Bit 7 directly corresponds to the output of IRQB pin, which is used to quickly
 check if this chip is the one generating an interrupt. It can only be cleared
 when all enabled and active interrupt flags are cleared. The other flags can
-only be cleared by:
+only be cleared by writing a bit 1 to its corresponding bit in this register
+or:
 ```
 Timer 1 Timeout:    Read T1L or write T1H or write T1LH
 Timer 2 Timeout:    Read T2L or write T2H
 Cx1 Transition:     Read or write PRx
-Cx2 Transition:     Read or write PRx (Dependent) / Write to IFR (Independent)
+Cx2 Transition:     Read or write PRx (Dependent-only)
 Byte Shifted:       Read or write SR
 ```
 
-### Eh - IER - Interrupt Enable Register (R/W)
+### 9F0Eh - IER - Interrupt Enable Register (R/W)
 ```
 Bit
 7       Enable/Disable Selected Bits (0=Disable, 1=Enable)
@@ -2889,7 +3173,7 @@ code value is as follows:
 0h=0/C# 4h=3/E  8h=6/G  Ch=9 /A#
 1h=1/D  5h=4/F  9h=7/G# Dh=10/B
 2h=2/D# 6h=5/F# Ah=8/A  Eh=11/C
-3h=2/D# 7h=5/F# Bh=8/A  Fh=11/C ; This row are invalid values, do not use
+3h=2/D# 7h=5/F# Bh=8/A  Fh=11/C ; In this row are invalid values, do not use
 ```
 Every mentions of key code or KC in this document will be referred as a
 continuous value after invalid "gaps" removal. Which means that its lower 3
@@ -3255,6 +3539,7 @@ frequency value of 31 is the same as 30.
 [CPU Arithmetic/Logical Operations](#cpu-arithmeticlogical-operations)  
 [CPU Rotate and Shift Instructions](#cpu-rotate-and-shift-instructions)  
 [CPU Jump and Control Instructions](#cpu-jump-and-control-instructions)  
+[CPU Opcode Matrix](#cpu-opcode-matrix)  
 
 ## CPU Registers and Flags
 
@@ -3677,13 +3962,13 @@ Opcode      Flags Clks  Syntax      Condition (branch if)
 B0 dd       ------  2** BCS rr      C=1 (carry/greater then/equal)
 D0 dd       ------  2** BNE rr      Z=0 (not zero/not equal)
 F0 dd       ------  2** BEQ rr      Z=1 (zero/equal)
-xF+00 nn rr ------  5   BBRx nn,rr^ [nn].bit_x=0
-xF+80 nn rr ------  5   BBSx nn,rr^ [nn].bit_x=1
+xF+00 nn rr ------  5** BBRx nn,rr^ [nn].bit_x=0
+xF+80 nn rr ------  5** BBSx nn,rr^ [nn].bit_x=1
 ```
 <small>^ These instructions are incompatible with 65C816</small>  
-<small>** If the condition is false (no branch executed). Otherwise, 3 cycles
-if the destination is in the same memory page, or 4 cycles if it crosses a page
-boundary (see below for exact info).</small>
+<small>** If the condition is false (no branch executed). Otherwise, add one
+cycle. If the destination is in the same memory page, or add one cycle if it
+crosses a page boundary (see below for exact info).</small>
 
 NOTE: After subtractions (SBC or CMP), carry is set when the result is above
 or equal, unlike as in Z80 and x86 CPUs.
@@ -3754,6 +4039,76 @@ The 65C02 does a read twice in all Read-Modify opcodes (such as INC, DEC and
 Shift/Rotate). Unlike older NMOS 6502s which does a read then a write of
 unmodified data, causing I/Os to act twice on writes.
 
+## CPU Opcode Matrix
+```
+   |x0h|x1h|x2h|x3h|x4h|x5h|x6h|x7h |x8h|x9h|xAh|xBh|xCh|xDh|xEh|xFh |
+---|---|---|---|---|---|---|---|----|---|---|---|---|---|---|---|----|
+   |BRK|ORA|   |   |TSB|ORA|ASL|RMB0|PHP|ORA|ASL|   |TSB|ORA|ASL|BBR0|
+0xh|brk|(zx|   |   | z | z | z | z  |stk| # | A |   | a | a | a | z  |
+   |1 7|2 6|   |   |2 5|2 3|2 5|2 5 |1 3|2 2|1 2|   |3 6|3 4|3 6|2 5 |
+---|---|---|---|---|---|---|---|----|---|---|---|---|---|---|---|----|
+   |BPL|ORA|ORA|   |TRB|ORA|ASL|RMB1|CLC|ORA|INC|   |TRB|ORA|ASL|BBR1|
+1xh|rel|(zy|(z)|   | z |z,x|z,x| z  |imp|a,y| A |   | a |a,x|a,x| z  |
+   |2 2|2 5|2 5|   |2 5|2 4|2 6|2 5 |1 2|3 4|1 2|   |3 6|3 4|3 7|2 5 |
+---|---|---|---|---|---|---|---|----|---|---|---|---|---|---|---|----|
+   |JSR|AND|   |   |BIT|AND|ROL|RMB2|PLP|AND|ROL|   |BIT|AND|ROL|BBR2|
+2xh|abs|(zx|   |   | z | z | z | z  |stk| # | A |   | a | a | a | z  |
+   |3 3|2 6|   |   |2 3|2 3|2 5|2 5 |1 4|2 2|1 2|   |3 4|3 4|3 6|2 5 |
+---|---|---|---|---|---|---|---|----|---|---|---|---|---|---|---|----|
+   |BMI|AND|AND|   |BIT|AND|ROL|RMB3|SEC|AND|DEC|   |BIT|AND|ROL|BBR3|
+3xh|rel|(zy|(z)|   |z,x|z,x|z,x| z  |imp|a,y| A |   |a,x|a,x|a,x| z  |
+   |2 2|2 5|2 5|   |2 4|2 4|2 6|2 5 |1 2|3 4|1 2|   |3 4|3 4|3 7|2 5 |
+---|---|---|---|---|---|---|---|----|---|---|---|---|---|---|---|----|
+   |RTI|EOR|   |   |   |EOR|LSR|RMB4|PHA|EOR|LSR|   |JMP|EOR|LSR|BBR4|
+4xh|stk|(zx|   |   |   | z | z | z  |stk| # | A |   | a | a | a | z  |
+   |2 6|2 6|   |   |   |2 3|2 5|2 5 |1 3|2 2|1 2|   |3 3|3 4|3 6|2 5 |
+---|---|---|---|---|---|---|---|----|---|---|---|---|---|---|---|----|
+   |BVC|EOR|EOR|   |   |EOR|LSR|RMB5|CLI|EOR|PHY|   |   |EOR|LSR|BBR5|
+5xh|rel|(zy|(z)|   |   |z,x|z,x| z  |imp|a,y|stk|   |   |a,x|a,x| z  |
+   |2 2|2 5|2 5|   |   |2 3|2 6|2 5 |1 2|3 4|1 3|   |   |3 4|3 7|2 5 |
+---|---|---|---|---|---|---|---|----|---|---|---|---|---|---|---|----|
+   |RTS|ADC|   |   |STZ|ADC|ROR|RMB6|PLA|ADC|ROR|   |JMP|ADC|ROR|BBR6|
+6xh|stk|(zx|   |   | z | z | z | z  |stk| # | A |   |(a)| a | a | z  |
+   |2 6|2 6|   |   |2 3|2 4|2 5|2 5 |1 4|2 2|1 2|   |3 6|3 4|3 6|2 5 |
+---|---|---|---|---|---|---|---|----|---|---|---|---|---|---|---|----|
+   |BVS|ADC|ADC|   |STZ|ADC|ROR|RMB7|SEI|ADC|PLY|   |JMP|ADC|ROR|BBR7|
+7xh|rel|(zy|(z)|   |z,x|z,x|z,x| z  |imp|a,y|stk|   |(ax|a,x|a,x| z  |
+   |2 2|2 5|2 5|   |2 4|2 3|2 6|2 5 |1 2|3 4|1 4|   |3 6|3 4|3 7|2 5 |
+---|---|---|---|---|---|---|---|----|---|---|---|---|---|---|---|----|
+   |BRA|STA|   |   |STY|STA|STX|SMB0|DEY|STA|TXA|   |STY|STA|STX|BBS0|
+8xh|rel|(zx|   |   | z | z | z | z  |imp| # |imp|   | a | a | a | z  |
+   |2 2|2 6|   |   |2 3|2 3|2 3|2 5 |1 2|2 2|1 2|   |3 4|3 4|3 4|2 5 |
+---|---|---|---|---|---|---|---|----|---|---|---|---|---|---|---|----|
+   |BCC|STA|STA|   |STY|STA|STX|SMB1|TYA|STA|TXS|   |STZ|STA|STX|BBS1|
+9xh|rel|(zy|(z)|   |z,x|z,x|z,y| z  |imp|a,y|imp|   | a |a,x|a,y| z  |
+   |2 2|2 5|2 5|   |2 4|2 4|2 4|2 5 |1 2|3 5|1 2|   |3 4|3 5|3 5|2 5 |
+---|---|---|---|---|---|---|---|----|---|---|---|---|---|---|---|----|
+   |LDY|LDA|LDX|   |LDY|LDA|LDX|SMB2|TAY|LDA|TAX|   |LDY|LDA|LDX|BBS2|
+Axh| # |(zx| # |   | z | z | z | z  |imp| # |imp|   | a | a | a | z  |
+   |2 2|2 6|2 2|   |2 3|2 3|2 3|2 5 |1 2|2 2|1 2|   |3 4|3 4|3 4|2 5 |
+---|---|---|---|---|---|---|---|----|---|---|---|---|---|---|---|----|
+   |BCS|LDA|LDA|   |LDY|LDA|LDX|SMB3|CLV|LDA|TSX|   |LDY|LDA|LDX|BBS3|
+Bxh|rel|(zy|(z)|   |z,x|z,x|z,y| z  |imp|a,y|imp|   |a,x|a,x|a,y| z  |
+   |2 2|2 5|2 5|   |2 4|2 4|2 4|2 5 |1 2|3 4|1 2|   |3 4|3 4|3 4|2 5 |
+---|---|---|---|---|---|---|---|----|---|---|---|---|---|---|---|----|
+   |CPY|CMP|   |   |CPY|CMP|DEC|SMB4|INY|CMP|DEX|WAI|CPY|CMP|DEC|BBS4|
+Cxh| # |(zx|   |   | z | z | z | z  |imp| # |imp|imp| a | a | a | z  |
+   |2 2|2 6|   |   |2 3|2 3|2 5|2 5 |1 2|2 2|1 2|1 3|3 4|3 4|3 6|2 5 |
+---|---|---|---|---|---|---|---|----|---|---|---|---|---|---|---|----|
+   |BNE|CMP|CMP|   |   |CMP|DEC|SMB5|CLD|CMP|PHX|STP|   |CMP|DEC|BBS5|
+Dxh|rel|(zy|(z)|   |   |z,x|z,x| z  |imp|a,y|stk|imp|   |a,x|a,x| z  |
+   |2 2|2 5|2 5|   |   |2 4|2 6|2 5 |1 2|3 4|1 3|1 -|   |3 4|3 7|2 5 |
+---|---|---|---|---|---|---|---|----|---|---|---|---|---|---|---|----|
+   |CPX|SBC|   |   |CPX|SBC|INC|SMB6|INX|SBC|NOP|   |CPX|SBC|INC|BBS6|
+Exh| # |(zx|   |   | z | z | z | z  |imp| # |imp|   | a | a | a | z  |
+   |2 2|2 6|   |   |2 3|2 3|2 5|2 5 |1 2|2 2|1 2|   |3 4|3 4|3 6|2 5 |
+---|---|---|---|---|---|---|---|----|---|---|---|---|---|---|---|----|
+   |BEQ|SBC|SBC|   |   |SBC|INC|SMB7|SED|SBC|PLX|   |   |SBC|INC|BBS7|
+Fxh|rel|(zy|(z)|   |   |z,x|z,x| z  |imp|a,y|stk|   |   |a,x|a,x| z  |
+   |2 2|2 5|2 5|   |   |2 4|2 6|2 5 |1 2|3 4|1 4|   |   |3 4|3 7|2 5 |
+----------------------------------------------------------------------
+```
+
 
 # About/Credits
 
@@ -3780,7 +4135,8 @@ Natt Akuma
  - Martin Korth (nocash) (SNES/65xx CPU reference)
  - Aaron Giles, Nuke.YKT (YM2151 core and test register details)
  - Adam Chapweske (PS/2 interface articles)
- - Wavicle (Test benches)
+ - Jonathan Burks (Wavicle) (X16-compatible board tests)
+ - Kevin Williams (TexElec) (X16 Developer Board schematics)
 
 ### Homepage
 https://ayce.dev/emptyx16.html - X16 specs updates (html version)  
