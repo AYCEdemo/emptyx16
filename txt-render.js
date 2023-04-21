@@ -42,7 +42,7 @@ function parseP(tokens, linePrefix) {
         break;
 
       case 'link':
-        if (words.length == 0 & token.raw.startsWith('[')) {
+        if (words.length == 0 && token.raw.startsWith('[')) {
           // markdown link at the beginning of the line, prepend -->
           // no line break here, it's already covered by br token
           out += '--> ' + token.text;
@@ -67,6 +67,14 @@ function parseP(tokens, linePrefix) {
 
       case 'html':
         // simply don't render the tag
+        break;
+
+      case 'image':
+        words.push('(Image: ' + token.text + ')');
+        break;
+
+      case 'strong':
+        words.push(token.raw);
         break;
 
       default:
