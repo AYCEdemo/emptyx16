@@ -1958,8 +1958,9 @@ Then, send I2C read and start reading data bytes. Once finish, send NoAck
 instead of Ack bit to end the transfer.
 
 ### Multi-function Pin
-> Is this pin actually connected to anywhere in X16? The current hardware seems
-> to not doing so. Not going to document this here until it's actually used...
+This pin can be used to output an alarm or square wave signal. It can also be
+configured as a general-purpose output port. It is connected to the I2C header
+in the Developer Board.
 
 ### Power-down and Power-up Timestamps
 This real-time clock chip also has a feature where it can detect when the
