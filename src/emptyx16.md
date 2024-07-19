@@ -97,51 +97,78 @@ Memory card SPI mode MMC interface
 ### VERA Versatile Embedded Retro Adapter (R/W)
 Note: The rightmost column shows the initial value on Reset
 ```
-9F20h - ADDR_L       - VRAM Address (lower 8 bits)                    00h
-9F21h - ADDR_M       - VRAM Address (middle 8 bits)                   00h
-9F22h - ADDR_H       - VRAM Address (upper 1 bit) / Increment Mode    00h
-9F23h - DATA0        - VRAM Data Port 0                               00h
-9F24h - DATA1        - VRAM Data Port 1                               00h
-9F25h - CTRL         - Control                                        00h
-9F26h - IEN          - Int. Enable / Line Comp. / Num. (upper 1 bit)  00h
-9F27h - ISR          - Interrupt / Status Register                    00h
-9F28h - IRQLINE_L    - Interrupt Line Compare (lower 8 bits) (W)      -
-9F28h - SCANLINE_L   - Current Line Number (lower 8 bits) (R)         00h
+9F20h - ADDR_L        - VRAM Address (lower 8 bits)                   00h
+9F21h - ADDR_M        - VRAM Address (middle 8 bits)                  00h
+9F22h - ADDR_H        - VRAM Address (upper 1 bit) / Increment Mode   00h
+9F23h - DATA0         - VRAM Data Port 0                              00h
+9F24h - DATA1         - VRAM Data Port 1                              00h
+9F25h - CTRL          - Control                                       00h
+9F26h - IEN           - Int. Enable / Line Comp. / Num. (upper 1 bit) 00h
+9F27h - ISR           - Interrupt / Status Register                   00h
+9F28h - IRQLINE_L     - Interrupt Line Compare (lower 8 bits) (W)     -
+9F28h - SCANLINE_L    - Current Line Number (lower 8 bits) (R)        00h
 
         (DCSEL=0)
-9F29h - DC_VIDEO     - Active Display Control                         00h
-9F2Ah - DC_HSCALE    - Active Display H-Scale                         80h
-9F2Bh - DC_VSCALE    - Active Display V-Scale                         80h
-9F2Ch - DC_BORDER    - Border Color                                   00h
+9F29h - DC_VIDEO      - Active Display Control                        04h
+9F2Ah - DC_HSCALE     - Active Display H-Scale                        80h
+9F2Bh - DC_VSCALE     - Active Display V-Scale                        80h
+9F2Ch - DC_BORDER     - Border Color                                  00h
 
         (DCSEL=1)
-9F29h - DC_HSTART    - Active Display H-Start                         00h
-9F2Ah - DC_HSTOP     - Active Display H-Stop                          A0h
-9F2Bh - DC_VSTART    - Active Display V-Start                         00h
-9F2Ch - DC_VSTOP     - Active Display V-Stop                          F0h
+9F29h - DC_HSTART     - Active Display H-Start                        00h
+9F2Ah - DC_HSTOP      - Active Display H-Stop                         A0h
+9F2Bh - DC_VSTART     - Active Display V-Start                        00h 
+9F2Ch - DC_VSTOP      - Active Display V-Stop                         F0h
+
+        (DCSEL=2)
+9F29h - FX_CTRL       - ADDR1 Update Mode / VRAM Data Port Write Mode 00h
+9F2Ah - FX_TILEBASE   - Affine Transformation Tile Base               00h
+9F2Bh - FX_MAPBASE    - Affine Transformation Map Base                00h
+9F2Ch - FX_MULT       - Write Cache Index / Multiply-accumulate Mode  00h
+
+        (DCSEL=3)
+9F29h - FX_X_INCR_L   - X Position Increment (lower 8 bits)           00h
+9F2Ah - FX_X_INCR_H   - X Position Increment (upper 8 bits)           00h
+9F2Bh - FX_Y_INCR_L   - Y Position Increment (lower 8 bits)           00h
+9F2Ch - FX_Y_INCR_H   - Y Position Increment (upper 8 bits)           00h
+
+        (DCSEL=4)
+9F29h - FX_X_POS_L    - Pixel X Position (lower 8 bits)               00h
+9F2Ah - FX_X_POS_H    - Pixel X Position (upper 3 bits)               00h
+9F2Bh - FX_Y_POS_L    - Pixel Y Position (lower 8 bits)               00h
+9F2Ch - FX_Y_POS_H    - Pixel Y Position (upper 3 bits)               00h
+
+        (DCSEL=5)
+9F29h - FX_X_POS_F    - Pixel X Fractional Position (upper 8 bits)    80h
+9F2Ah - FX_Y_POS_F    - Pixel Y Fractional Position (upper 8 bits)    80h
+9F2Bh - FX_POLY_FILL_L- Fill Length (lower 3 bits)                    00h
+9F2Ch - FX_POLY_FILL_H- Fill Length (upper 7 bits)                    00h
+
+        (DCSEL=6)
+9F29h..9F2Ch FX_CACHE - 32-bit Write Cache Data                       00000000h
 
         (DCSEL=63)
-9F29h..9F2Ch         - Version Number (R)
+9F29h..9F2Ch VERSION  - Version Number (R)                            -
 
-9F2Dh - L0_CONFIG    - L0 Mode and Map Size                           00h
-9F2Eh - L0_MAPBASE   - L0 Map Base                                    00h
-9F2Fh - L0_TILEBASE  - L0 Tile Base and Tile Size                     00h
-9F30h - L0_HSCROLL_L - L0 H-Scroll (lower 8 bits)                     00h
-9F31h - L0_HSCROLL_H - L0 H-Scroll (upper 4 bits) / Bitmap Color      00h
-9F32h - L0_VSCROLL_L - L0 V-Scroll (lower 8 bits)                     00h
-9F33h - L0_VSCROLL_H - L0 V-Scroll (upper 4 bits)                     00h
-9F34h - L1_CONFIG    - L1 Mode and Map Size                           00h
-9F35h - L1_MAPBASE   - L1 Map Base                                    00h
-9F36h - L1_TILEBASE  - L1 Tile Base and Tile Size                     00h
-9F37h - L1_HSCROLL_L - L1 H-Scroll (lower 8 bits)                     00h
-9F38h - L1_HSCROLL_H - L1 H-Scroll (upper 4 bits) / Bitmap Color      00h
-9F39h - L1_VSCROLL_L - L1 V-Scroll (lower 8 bits)                     00h
-9F3Ah - L1_VSCROLL_H - L1 V-Scroll (upper 4 bits)                     00h
-9F3Bh - AUDIO_CTRL   - Audio FIFO Control                             00h
-9F3Ch - AUDIO_RATE   - Audio FIFO Sample Rate                         00h
-9F3Dh - AUDIO_DATA   - Audio FIFO Data (W)                            -
-9F3Eh - SPI_DATA     - SPI Data                                       -
-9F3Fh - SPI_CTRL     - SPI Control                                    00h
+9F2Dh - L0_CONFIG     - L0 Mode and Map Size                          00h
+9F2Eh - L0_MAPBASE    - L0 Map Base                                   00h
+9F2Fh - L0_TILEBASE   - L0 Tile Base and Tile Size                    00h
+9F30h - L0_HSCROLL_L  - L0 H-Scroll (lower 8 bits)                    00h
+9F31h - L0_HSCROLL_H  - L0 H-Scroll (upper 4 bits) / Bitmap Color     00h
+9F32h - L0_VSCROLL_L  - L0 V-Scroll (lower 8 bits)                    00h
+9F33h - L0_VSCROLL_H  - L0 V-Scroll (upper 4 bits)                    00h
+9F34h - L1_CONFIG     - L1 Mode and Map Size                          00h
+9F35h - L1_MAPBASE    - L1 Map Base                                   00h
+9F36h - L1_TILEBASE   - L1 Tile Base and Tile Size                    00h
+9F37h - L1_HSCROLL_L  - L1 H-Scroll (lower 8 bits)                    00h
+9F38h - L1_HSCROLL_H  - L1 H-Scroll (upper 4 bits) / Bitmap Color     00h
+9F39h - L1_VSCROLL_L  - L1 V-Scroll (lower 8 bits)                    00h
+9F3Ah - L1_VSCROLL_H  - L1 V-Scroll (upper 4 bits)                    00h
+9F3Bh - AUDIO_CTRL    - Audio FIFO Control                            00h
+9F3Ch - AUDIO_RATE    - Audio FIFO Sample Rate                        00h
+9F3Dh - AUDIO_DATA    - Audio FIFO Data (W)                           -
+9F3Eh - SPI_DATA      - SPI Data                                      -
+9F3Fh - SPI_CTRL      - SPI Control                                   00h
 ```
 
 ### YM2151 I/O Ports (2MHz Speed)
@@ -263,9 +290,10 @@ on boot and become consistent at user program execution.
 ### 9F22h - ADDR_H - VRAM Address (upper 1 bit) and Increment Mode (R/W)
 ```
 Bit
-7-4     Address Step Size (see below)
-3       Address Step Direction (0=Increment, 1=Decrement)
-2-1     Not Used
+7-4     Address Byte Step Size (see below)
+3       Address Byte Step Direction (0=Increment, 1=Decrement)
+2       Address Nibble Step (0=Increment, 1=Decrement)
+1       VRAM Nibble Address
 0       Upper 1 bit of VRAM Address
 ```
 Address Step Size:
@@ -289,10 +317,21 @@ occurred from reading/writing to their respective data port register. For
 details about ADDRSEL bit, see:  
 [X16 VERA Control](#x16-vera-control)
 
+Nibble address and step only work when address byte step is 0 and are only
+relevant in FX-assisted 4-bit bitmap drawing, see:  
+[X16 VERA FX Helper](#x16-vera-fx-helper)
+
 ### 9F23h - DATA0 - VRAM Data Port 0 (R/W)
 ### 9F24h - DATA1 - VRAM Data Port 1 (R/W)
 Simply reads or writes a byte at the set address in 9F20h-9F22h of their
 respective ports, then steps the address once.
+
+CAUTION: When the address is set or DATAx is read or written, the destination
+port will automatically read the next data from VRAM into a buffer ready for
+its next DATAx read. However, these buffers are not shared across ports which
+can lead to inconsistency when both ports are set to the same address. For
+example, when both ADDR0 and ADDR1 are the same, writing to DATA0 will *not*
+update DATA1's read data and vice versa.
 
 ### Memory Content
 [X16 VERA Memory and I/O Map (VRAM)](#x16-vera-memory-and-io-map-vram)  
@@ -409,6 +448,7 @@ next i
 [X16 VERA Interrupts](#x16-vera-layer-control)  
 [X16 VERA Audio FIFO](#x16-vera-audio-fifo)  
 [X16 VERA Memory Card Interface](#x16-vera-memory-card-interface)  
+[X16 VERA FX Helper](#x16-vera-fx-helper)
 
 ### Embedded Memory
 [X16 VERA Memory and I/O Map (VRAM)](#x16-vera-memory-and-io-map-vram)  
@@ -446,16 +486,16 @@ VERA memory from the CPU. For more information, see their respective entries:
 [X16 VERA Display Composer](#x16-vera-display-composer)  
 [X16 VERA Memory Access](#x16-vera-memory-access)
 
-### 9F29h..9F2Ch (DCSEL=63) - Version Number (R)
+### 9F29h..9F2Ch (DCSEL=63) - VERSION - Version Number (R)
 ```
 Byte 0  Always 56h ('V')
 Byte 1  Major Version Number
 Byte 2  Minor Version Number
-Byte 3  Build Number
+Byte 3  Patch Version Number
 ```
 Writing 63 to DCSEL will select this read-only register. It contains a version
-number information of this VERA hardware. For example, a "community release
-v0.1.1" FPGA configuration contains bytes 56h 00h 01h 01h in order.
+number information of this VERA hardware. For example, an official r47 FPGA
+configuration contains bytes 56h 2Fh 00h 00h in order.
 
 ## X16 VERA Display Composer
 
@@ -552,13 +592,17 @@ have 9F29h-9F2Ch values of 10h, 19h, 60h, 7Dh in order.
 Bit
 7-6     Map Height (0=32, 1=64, 2=128, 3=256 tiles)
 5-4     Map Width (0=32, 1=64, 2=128, 3=256 tiles)
-3       1bpp Tile Mode Color (0=16FG/16BG, 1=256FG/1BG)
+3       Tile Mode Color (0=16FG/16BG, 1=256FG/1BG) (1bpp-only)
+        / Force Palette Number Bit 7               (other depths)
 2       Tile/Bitmap Mode (0=Tile Mode, 1=Bitmap Mode)
 1-0     Color Depth (0=1bpp, 1=2bpp, 2=4bpp, 3=8bpp)
 ```
-1bpp Tile Mode Color (bit 3) setting is valid only if the layer is set to that
-mode (bits 0-2 are all zero). The map will wrap around if the screen draws
-beyond its width or height.
+Tile Mode Color (bit 3) setting is valid only if the layer is set to 1bpp mode.
+For other modes, all layer pixels' palette number bit 7 is ORed with this bit
+just before the color lookup. Allowing quick global color changes to layers.
+Sprite pixels are not affected by this bit, however.
+
+The map will wrap around if the screen draws beyond its width or height.
 
 ### 9F2Eh - L0_MAPBASE - L0 Map Base (R/W)
 ### 9F35h - L1_MAPBASE - L1 Map Base (R/W)
@@ -642,9 +686,9 @@ When read, returns the current *display* line number. When write, Specifies the
 with the DC_VSCALE register nor offset with the DC_VSTART register. In
 interlaced mode, bit 0 is fixed to the current odd/even field value when read
 and is ignored when write - it will generate IRQ in both two frames even
-if that line is skipped in either field of the display. Line comparison is only
-done on drawing lines which means a value higher than 479 will never generate
-Line IRQs. Also for lines 512-525 (during VBlank), this is always read 511.
+if that line is skipped in either field of the display. Line comparison is done
+on every display lines even during VBlank up to line 511. Display lines further
+than this are always read 511 and cannot be compared.
 
 CAUTION: Since VERA renders to a line buffer first then read it out to the
 screen in the next line, changes made to layer settings and VRAM will not be
@@ -718,9 +762,8 @@ the desired data from the device is received and latched.
 ```
 Bit
 7       Busy Flag (1=Busy) (Read-only)
-6-4     Not Used
-3       Auto Transfer (0=Off, 1=On) (undocumented)
-2       Not Used
+6-3     Not Used
+2       Auto Transfer (0=Off, 1=On)
 1       Shift Clock Speed (0=12.5MHz, 1=391KHz)
 0       Chip Select (0=Release, 1=Select)
 ```
@@ -907,6 +950,152 @@ allows VERA FPGA's configuration to be reprogrammed in-system through the same
 SPI interface. However, SPI flash memory have different commands from memory
 cards and the topic of programming it is outside of this document's scope.
 
+## X16 VERA FX Helper
+
+(under construction - see
+[Jeffrey's docs](https://docs.google.com/document/d/1q34uWOiM3Be2pnaHRVgSdHySI-qsiQWPTo_gfE54PTg)
+for now)
+
+Starting with V0.3.1, an FX helper was added to the VERA to accelerate bitmap
+graphics tasks such as transparent pixel composition, polygon drawing and
+affine transformation. It also provides an interface to a single-cycle 16-bit
+signed multiply-accumulator. Few more registers have been added through
+expanded DCSEL bits in CTRL.
+
+However, this is merely an addition to the VRAM I/O interface. It does not
+modify an existing renderer logic and could not render by itself. Thus the CPU
+still have to manually push out all the pixels.
+
+
+### 9F29h (DCSEL=2) - FX_CTRL - ADDR1 Update Mode / VRAM Data Port Write Mode (R/W)
+```
+Bit
+7       Transparent Pixel Write Masking (0=Disabled, 1=Enabled)
+6       32-Bit Write Cache Writing (0=Disabled, 1=Enabled)
+5       Read to 32-Bit Write Cache (0=Disabled, 1=Enabled)
+4       One-Byte Cache Cycling (0=Disabled, 1=Enabled)
+3       Odd Step Skipping (0=Disabled, 1=Enabled)
+2       Target Bitmap Mode (0=8-Bit, 1=4-Bit)
+1-0     ADDR1 Update Mode
+          0 = Normal
+          1 = Line Draw Helper
+          2 = Filled Polygon Draw Helper
+          3 = Affine Transformation Helper
+```
+
+### 9F2Ah (DCSEL=2) - FX_TILEBASE - Affine Transformation Tile Base (W)
+```
+Bit
+7-2     Tile Base Address in VRAM (in 2-KiB steps)
+1       Outside Map (0=Wrap Within Map Area, 1=Filled by Tile 00h)
+0       2-bit Filled Polygon Drawing
+```
+
+### 9F2Bh (DCSEL=2) - FX_MAPBASE - Affine Transformation Map Base (W)
+```
+Bit
+7-2     Map Base Address in VRAM (in 2-KiB steps)
+1-0     Map Size (0=2x2, 1=8x8, 2=32x32, 3=128x128)
+```
+
+### 9F2Ch (DCSEL=2) - FX_MULT - Write Cache Index / Multiply-accumulate Mode (W)
+```
+Bit
+7       Reset MAC's Accumulator to 0
+6       Perform One Round of MAC Accumulation
+5       Add/Subtract to Accumulator (0=Add, 1=Subtract)
+4       Enable MAC Writes to VRAM (0=Disabled, 1=Enabled)
+3-2     32-bit Write Cache Byte Index
+1       32-bit Write Cache Nibble Index
+0       Read to Write Cache Step (0=All 4 bytes, 1=Bytes 2-3 Only)
+```
+
+### 9F29h (DCSEL=3) - FX_X_INCR_L - X Position Increment (lower 8 bits) (W)
+```
+Bit
+7-0     X Position Increment (lower 8 bits)
+```
+
+### 9F2Ah (DCSEL=3) - FX_X_INCR_H - X Position Increment (upper 8 bits) (W)
+```
+Bit
+7       X Position Increment (significand bit: 0=1/512 pixels, 1=1/16 pixels)
+6-0     X Position Increment (upper 7 bits)
+```
+
+### 9F2Bh (DCSEL=3) - FX_Y_INCR_L - Y Position Increment (lower 8 bits) (W)
+```
+Bit
+7-0     Y Position Increment (lower 8 bits)
+```
+
+### 9F2Ch (DCSEL=3) - FX_Y_INCR_H - Y Position Increment (upper 8 bits) (W)
+```
+Bit
+7       Y Position Increment (significand bit: 0=1/512 pixels, 1=1/16 pixels)
+6-0     Y Position Increment (upper 7 bits)
+```
+
+### 9F29h (DCSEL=4) - FX_X_POS_L - Pixel X Position (lower 8 bits) (W)
+```
+Bit
+7-0     Pixel X Position (lower 8 bits)
+```
+
+### 9F2Ah (DCSEL=4) - FX_X_POS_H - Pixel X Position (upper 3 bits) (W)
+```
+Bit
+7       Pixel X Fractional Position (lower 1 bit)
+6-3     Not Used
+2-0     Pixel X Position (upper 3 bits)
+```
+
+### 9F2Bh (DCSEL=4) - FX_Y_POS_L - Pixel Y Position (lower 8 bits) (W)
+```
+Bit
+7-0     Pixel Y Position (lower 8 bits)
+```
+
+### 9F2Ch (DCSEL=4) - FX_Y_POS_H - Pixel Y Position (upper 3 bits) (W)
+```
+Bit
+7       Pixel Y Fractional Position (lower 1 bit)
+6-3     Not Used
+2-0     Pixel Y Position (upper 3 bits)
+```
+
+### 9F29h (DCSEL=5) - FX_X_POS_F - Pixel X Fractional Position (upper 8 bits) (W)
+### 9F2Ah (DCSEL=5) - FX_Y_POS_F - Pixel Y Fractional Position (upper 8 bits) (W)
+
+### 9F2Bh (DCSEL=5) - FX_POLY_FILL_L - Fill Length (lower 3 bits) (R)
+```
+Bit
+7       Fill Length (0=Less Than 16, 1=Greater Than/Equal 16)
+6-5     X Position (bits 0-1)
+4       X Position (bit 2) (4-bit bitmap) / Fill Length (bit 3) (8-bit bitmap)
+3-1     Fill Length (bits 0-2)
+0       Always 0
+```
+This register is oddly-laid out so that it can directly be read as a 16-bit jump
+table index and big fill length conditions as a number's sign
+
+### 9F2Ch (DCSEL=5) - FX_POLY_FILL_H - Fill Length (upper 7 bits) (R)
+```
+Bit
+7-1     Fill Length (bits 3-9)
+0       Always 0
+```
+This register is oddly-laid out so that it can directly be read as a 16-bit jump
+table index. Also, fill lengths more than 2FFh (bits 8-9 are both set) indicate
+a negative fill length and the current polygon's scanline should not be drawn.
+
+### 9F29h..9F2Ch (DCSEL=6) - FX_CACHE - 32-bit Write Cache Data (W)
+Writes to the 32-bit write cache directly.
+
+Reading from 9F29h will set MAC's current accumulator to 0. Reading from 9F2Ah
+will perform an accumulation to MAC. Both actions are only a shortcut to
+FX_MULT writes and will *not* return the write cache's content, however.
+
 ## X16 VERA Memory and I/O Map (VRAM)
 
 ### VERA Memory Map
@@ -1015,9 +1204,9 @@ The output volume is not linear and has the meaning as follows:
         0Ah=23  16h=47  22h=95  2Eh=191 3Ah=383
         0Bh=25  17h=50  23h=101 2Fh=203 3Bh=406
         0Ch=26  18h=53  24h=107 30h=215 3Ch=430
-01h=14  0Dh=28  19h=57  25h=114 31h=228 3Dh=456
-02h=15  0Eh=30  1Ah=60  26h=120 32h=241 3Eh=483
-03h=16  0Fh=32  1Bh=64  27h=128 33h=256 3Fh=512
+01h=4   0Dh=28  19h=57  25h=114 31h=228 3Dh=456
+02h=8   0Eh=30  1Ah=60  26h=120 32h=241 3Eh=483
+03h=12  0Fh=32  1Bh=64  27h=128 33h=256 3Fh=512
 ```
 NOTE: All values can be approximated as 0.5 dB steps.
 
@@ -1404,13 +1593,21 @@ CMD     VAL     Description
 01h     01h     Hard Reset
 02h     00h     Soft Reset
 03h     00h     NMI
-05h     nnh     Activity LED Brightness (0-255)
-07h             Read Keybord Data
+05h     nnh     Write Activity LED Brightness (0-255)
+07h             Read Keyboard Data
 08h     nnh     Read/Write Dummy Register
+09h     nnh     Write Debug Output
 18h             Read Keyboard Status
-19h     nnh     Write Keybord Data
-1Ah     nnh nnh Write Keybord Data
+19h     nnh     Write Keyboard Data
+1Ah     nnh nnh Write Keyboard Data
+20h             Write Requested Mouse Type
 21h             Read Mouse Data
+22h             Read Mouse Type
+30h             Read Major Version Number
+31h             Read Minor Version Number
+32h             Read Patch Version Number
+8Eh             Read bootloader signature
+8Fh     31h     Enable bootloader for programming
 ```
 
 ## X16 SMC PS/2 Interface (Keyboard/Mouse)
@@ -1528,6 +1725,19 @@ write commands. These are:
   sending the Read Data (EBh) command.
 * Wrap Mode - The mouse echoes any written commands back and does nothing,
   except ECh (Wrap Mode Disable) and FFh (Reset).
+
+### Mouse Type
+Starting with SMC version 45.1.0, mouse connection and type can be detected by
+sending read command 22h. The SMC will return these possible values:
+```
+00h         A mouse with no scroll wheel support is connected
+03h         A mouse with scroll wheel support is connected
+04h         A mouse with scroll wheel and extra buttons support is connected
+FCh         No mouse connected or initialization failed
+FFh         Unknown. SMC has an older firmware
+```
+It is also possible to manually set the mouse type and limit the functionality
+by sending write command 20h.
 
 ### Mouse Data
 The standard PS/2 mouse (which doesn't have scroll wheels) sends the following
@@ -1810,8 +2020,8 @@ Writing to this register will reset this bit and the entire power-down
 timestamp registers. Allowing any new power-down events to be recorded again
 (any newer power-down events will not overwrite the old timestamp).
 
-Day of Week value meanings are user-defined. For X16 System, a value of 1
-means Sunday (?)
+Day of Week value meanings are user-defined. For X16 system, a value of 1 means
+Monday.
 
 ### 04h - RTCDATE - Timekeeping Date (R/W)
 ```
@@ -2212,43 +2422,6 @@ The following pinouts are viewed from the component side.
              -------
 ```
 
-### X16p "Prototype #3" Expansion Port Pinouts
-```
-      ^^^ To I/O side ^^^
-             -------
-    -12V -- |1    31| -- +12V
-     GND -- |2    32| -- +5V
-   +3.3V -- |3    33| -- GND
-     GND -- |4    34| <- /IO4
- AUDIO_L <- |5    35| <- /IO5
-     GND -- |6    36| <- /IO6
- AUDIO_R <- |7    37| <- /IO7
-     GND -- |8    38| <- /IO8
-     /VP -> |9    39| <- /RES
-     RDY <> |10   40| -- GND
-    /IRQ <- |11   41| <- PHI2
-      BE <- |12   42| <- /ML
-    /NMI <- |13   43| -- GND
-    SYNC -> |14   44| <> R/W
-     GND -- |15   45| <> D0
-      A0 <> |16   46| <> D1
-      A1 <> |17   47| <> D2
-      A2 <> |18   48| <> D3
-      A3 <> |19   49| <> D4
-      A4 <> |20   50| <> D5
-      A5 <> |21   51| <> D6
-      A6 <> |22   52| <> D7
-      A7 <> |23   53| <> A15
-      A8 <> |24   54| <> A14
-      A9 <> |25   55| <> A13
-     A10 <> |26   56| <> A12
-     A11 <> |27   57| -- GND
-     GND -- |28   58| -- +3.3V
-     +5V -- |29   59| -- GND
-    +12V -- |30   60| -- -12V
-             -------
-```
-
 ## X16 Pinouts VERA Module
 Viewed from component side, the connector is a 2x12 pin header with a 2.54mm
 pitch.
@@ -2283,21 +2456,6 @@ Developer Board
     MOUSE_DAT |8  1 13| /PWR_ON
     MOUSE_CLK |9    12| HDD_LED
    /SMC_RESET |10   11| NMI_BTN
-              '-------'
-```
-Prototype #3
-```
-              .---_---.
-      I2C_SDA |1    20| /RES
-      HDD_LED |2  T 19| /NMI
-      I2C_SCL |3  I 18| RESET_BTN
-   KB_DAT (?) |4  N 17| NMI_BTN
-          VCC |5  Y 16| AGND
-          GND |6  8 15| AVCC
-   KB_CLK (?) |7  6 14| PWR_BTN
-MOUSE_DAT (?) |8  1 13| /PWR_ON
-MOUSE_CLK (?) |9    12| PWR_OK
-   /SMC_RESET |10   11| (?)
               '-------'
 ```
 
@@ -3846,6 +4004,10 @@ Opcode      Flags Clks  Syntax
 Flags are set as follows: `Z=((A AND op)==0)`, `N=op.Bit(7)` and `V=op.Bit(6)`.
 Note that N and V rely only on op's value instead of the result.
 
+CAUTION: N and V flags result of `BIT #nn` is different across various 65C02
+implementations and should not be relied upon. Listed above is WDC 65C02's
+behavior which will *not* affect these flags.
+
 ### Increment by one
 ```
 Opcode      Flags Clks  Syntax      Effect
@@ -3959,7 +4121,7 @@ Opcode      Flags Clks  Syntax      Condition (branch if)
 50 dd       ------  2** BVC rr      V=0 (no overflow)
 70 dd       ------  2** BVS rr      V=1 (overflow)
 90 dd       ------  2** BCC rr      C=0 (no carry/less than)
-B0 dd       ------  2** BCS rr      C=1 (carry/greater then/equal)
+B0 dd       ------  2** BCS rr      C=1 (carry/greater than/equal)
 D0 dd       ------  2** BNE rr      Z=0 (not zero/not equal)
 F0 dd       ------  2** BEQ rr      Z=1 (zero/equal)
 xF+00 nn rr ------  5** BBRx nn,rr^ [nn].bit_x=0
@@ -4116,10 +4278,9 @@ Fxh|rel|(zy|(z)|   |   |z,x|z,x| z  |imp|a,y|stk|   |   |a,x|a,x| z  |
 
 This document is written as an alternative to the official reference and aims
 to document Commander X16 hardware in detail as much as possible. While still
-being easy to follow in programmer's perspective. There are still lots of
-missing and uncomfirmed details based on speculation and emulator source codes
-(marked by (?)). Keep in mind that the hardware is currently in development and
-it (and this specs too) can change anytime!
+being easy to follow in programmer's perspective. Keep in mind that the
+hardware is currently in development and it (and this specs too) can change
+anytime!
 
 This document is released under
 [CC-BY-4.0 license](https://creativecommons.org/licenses/by/4.0/). Everyone is
@@ -4135,8 +4296,10 @@ Natt Akuma
  - Martin Korth (nocash) (SNES/65xx CPU reference)
  - Aaron Giles, Nuke.YKT (YM2151 core and test register details)
  - Adam Chapweske (PS/2 interface articles)
- - Jonathan Burks (Wavicle) (X16-compatible board tests)
+ - Jonathan Burks (Wavicle) (X16 board tests)
  - Kevin Williams (TexElec) (X16 Developer Board schematics)
+ - Jeffrey Hullekes (VERA FX Helper source code and reference)
+ - Stephen Jakobsson (SMC source code and reference)
 
 ### Homepage
 https://ayce.dev/emptyx16.html - X16 specs updates (html version)  
