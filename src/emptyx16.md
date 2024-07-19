@@ -1313,12 +1313,12 @@ Byte 7
 ```
 
 ### Sprite Collision
-VERA has a feature where sprite collisions can be detected automatically on
-hardware while rendering. It does this by having a collision buffer in addition
-to a render buffer in a line. Each time a non-transparent pixel of a sprite is
-being drawn to the buffer, it will compare the collision mask bit field between
-of that sprite and the buffer. A collision is marked if one of bit positions
-match. The implementation pseudocode is as follows:
+VERA has a feature where sprite collisions to other sprites can be detected
+automatically by hardware while rendering. It does this by having a collision
+buffer in addition to a render buffer in a line. Each time a non-transparent
+pixel of a sprite is being drawn to the buffer, it will compare the collision
+mask bit field between of that sprite and the buffer. A collision is marked if
+one of bit positions match. The implementation pseudocode is as follows:
 ```
 For each frame:
     cflag := 0
@@ -1338,8 +1338,8 @@ CAUTION: Collisions are only detected on sprites that are actually drawn. This
 can be problematic when sprites are off the 640-pixel line buffer or per-line
 limit is reached or the line it's being drawn is skipped from a V-Scale value
 of more than 1.0 or an interlaced mode. Also, priority settings have no effect
-on the collision detection which means that *disabled* sprites that are
-successfully "drawn" can still contribute to it.
+on the collision detection except a setting where the sprite is disabled as it
+will not be drawn at all.
 
 ### Sprite Priority to Other Sprites
 When sprites are on the same priority (byte 6 bits 2-3 in attribute), the
